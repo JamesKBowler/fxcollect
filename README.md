@@ -76,10 +76,10 @@ The schema is one database per offer as this will provide plenty of space for fu
 
 #### HistoricalCollector 
 
-After a database check or creation has been carried out a 'DBReady' event is place in the queue, which is then passed over to the HistoricalCollector class located in historical.py .
-The HistoricalCollector asks the DatabaseManager for the last date from the database, if this is a new offer or first time system startup, the DatabaseManager will return a date from .xml catalogue. If the catalog does not have a corresponding date an artificial low date of 2007-01-01 00:00:00 is returned.
+After a database check or creation has been carried out, a 'DBReady' event is placed into the queue, which is then passed over to the HistoricalCollector class located in historical.py .
+The HistoricalCollector asks the DatabaseManager for the lastest date in the database, if this is a new offer or first time system startup, the DatabaseManager will return a date from the .xml catalogue. If the catalog does not have a corresponding date an artificial low date of 2007-01-01 00:00:00 is returned.
 Now the HistoricalCollector has a starting point, it will begin to call FXCM's API and collect data. Once data is returned, a 'HISTDATA' event is created and placed in the queue, which in turn will be passed to the DatabaseManager and written to the database.
-After all historical data has been collected for the offer, a 'GETLIVE' event is placed the queue and the HistoricalCollector process will exit.
+After all historical data has been collected for the offer, a 'GETLIVE' event is placed into the queue and the HistoricalCollector process will exit.
 
 #### LiveDataMiner 
 
