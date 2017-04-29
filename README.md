@@ -36,10 +36,10 @@ https://mariadb.org/download/
 
 5. Download this repository and place in a convenient location
 
-6. Create a logs folder in the root directory
- $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs
+6. Create a logs folder in the root directory  
+ $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs  
 
-7. To start the process just execute:
+7. To start the process just execute:  
  $ python ~/fxcmminer/fxcmminer_v1.0/engine.py  
 
 ##### This will take about 30 hours to download.
