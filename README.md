@@ -6,9 +6,10 @@ Setup
 I use an ESXi server for all my virtual machines, however this will run on any hypervisor.
 
 Hardware or Virtual machine:
-...2x CPUs
-...4GB RAM
-...100GB SSD/HDD (for testing hard drive is fine)
+
+   2x CPUs  
+   4GB RAM  
+   100GB SSD/HDD (for testing hard drive is fine)  
 
 Total drive usage for the database (excluding OS etc) is 41GB as of 29/04/2017
 
@@ -21,14 +22,14 @@ https://mariadb.org/download/
 
 3. Setup MariaDB to allow the user 'sec_master' to access the database with read and write permissions.
 
-...$ mysql -u root -p
+   $ mysql -u root -p  
 
-...mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';
-...mysql> GRANT ALL PRIVILEGES ON *.* TO 'sec_master'@'localhost';
-...mysql> FLUSH PRIVILEGES;
+   mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';  
+   mysql> GRANT ALL PRIVILEGES ON *.* TO 'sec_master'@'localhost';  
+   mysql> FLUSH PRIVILEGES;  
 
 (optional)
-...$ sudo service mysql restart
+   $ sudo service mysql restart  
 
 4. Download forexconnect and follow instructions. 
 https://github.com/JamesKBowler/python-forexconnect
