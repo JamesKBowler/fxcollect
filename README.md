@@ -34,6 +34,9 @@ https://github.com/JamesKBowler/python-forexconnect
 
 5. Download this repository and place in a convenient location
 
+6. Create a logs folder in the root directory
+mkdir ~/fxcmminer/fxcmminer_v1.0/logs
+
 To start the process just execute:
 python ~/fxcmminer/fxcmminer_v1.0/engine.py
 
