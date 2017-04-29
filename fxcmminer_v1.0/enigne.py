@@ -1,5 +1,5 @@
 from db_manager import DatabaseManager
-from  historical import HistoricalCollector
+from historical import HistoricalCollector
 from live import LiveDataMiner
 from fxscout import Scout
 import forexconnect as fx
