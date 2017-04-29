@@ -37,9 +37,12 @@ I am using on Ubuntu Server 16.04 (without GUI) for testing, however this will r
 5. Download this repository and place in a convenient location
 
 6. Create a logs folder in the root directory  
- $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs  
+ $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs
+ 
+7. Set the system time zone to EST
+ $ sudo timedatectl set-timezone EST
 
-7. To start the process just execute:  
+8. To start the process just execute:  
  $ python ~/fxcmminer/fxcmminer_v1.0/engine.py  
 
 ##### This will take about 30 hours to download.
