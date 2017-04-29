@@ -50,9 +50,8 @@ class DatabaseManager(object):
         On first startup this method will create a new database and
         tables for each offer. 
         
-        On second startup it will compare the database with the
-        current offer and if the offer is not currenlty being tracked,
-        it will create a new database and tables.
+        On second startup it will compare the database with the current offer
+        and skip database creation if already present.
         """
         def _create_db(offer):
             """
