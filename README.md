@@ -3,10 +3,9 @@
 The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for back testing or live execution.
 
 ### Setup
-I use an ESXi server for all my virtual machines, however this will run on any hypervisor.
+I use an ESXi server for all my virtual machines, however this will run on any hypervisor or hardware:
 
-Hardware or Virtual machine:
-
+Specification:  
    2x CPUs  
    4GB RAM  
    100GB SSD/HDD (for testing hard drive is fine)  
