@@ -1,4 +1,4 @@
-## fxcmminer v1.0
+# fxcmminer v1.0
 
 The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
 
@@ -58,30 +58,32 @@ If you need assistance setting this up or find any bugs, please report using the
 
 4. Clean up code!
 
-## Code Explanation
+### Code Explanation
 
-### Scout
+#### Scout
 
 The process of collecting data from FXCM is started by executing the engine.py script. This in turn will start the fxscout.py, who's primary job is to scout FXCM for currently tradable instruments (also know as 'offers'). Once the Scout has found the 'offers' available, it will contact the FXCM .xml catalogue and make a local copy. If FXCM add another 'offer' the Scout will then make a new local copy of the catalog. The scout will continue checking FXCM for the duration of the programs up time and will only place an 'OFFER' event in the queue on system startup or if a new offer is added in the future.
 
-### DatabaseManager
+#### DatabaseManager
 
 Once a new an 'OFFER' event is placed in the queue, the Engine class will pass the event over to the DatabaseManager located in db_manager.py. DatabaseManager will compare its local database with the offer. If the database already exists the creation is skipped, if not the corresponding database and tables for the following time frames will be created.
-['M1','W1','D1','H8', 'H4', 'H2', 'H1','m30', 'm15', 'm5', 'm1']
+
+  ['M1','W1','D1','H8', 'H4', 'H2', 'H1','m30', 'm15', 'm5', 'm1']  
+
 The schema is one database per offer as this will provide plenty of space for future expansion.
 
-### HistoricalCollector 
+#### HistoricalCollector 
 
 After a database check or creation has been carried out a 'DBReady' event is place in the queue, which is then passed over to the HistoricalCollector class located in historical.py .
 The HistoricalCollector asks the DatabaseManager for the last date from the database, if this is a new offer or first time start system startup, the DatabaseManager will return a date from .xml catalogue. If the catalog does not have a corresponding date an artificial low date of 2007-01-01 00:00:00 is returned.
 Now the HistoricalCollector has a starting point, it will begin to call FXCM's API and collect data. Once data is returned, a 'HISTDATA' event is created and placed in the queue, which in turn will be passed to the DatabaseManager and written to the database.
 After all historical data has been collected for the offer, a 'GETLIVE' event is placed the queue and the HistoricalCollector process will exit.
 
-### LiveDataMiner 
+#### LiveDataMiner 
 
 On receipt of the 'GETLIVE' event, LiveDataMiner located in live.py, will continue to collect live data from FXCM using a series of time based events from apscheduler. Each event from apscheduler fires off a data collection sequence. Once data is collected a 'LIVEDATA' event is created and placed in the queue for the DatabaseManager.
 
-### Other classes 
+#### Other classes 
 
 TimeDelta will provide a range in minutes for each time frame, that will not exceed to 300 bars (data points). This is because the maximum bars return for any one API call to FXCM is 300.
 Using the information from TimeDelta, DateRange will provide a date block which is used to call the API. At the moment this is the only way I could exclude calling for data at the weekends whilst FXCM is closed.
