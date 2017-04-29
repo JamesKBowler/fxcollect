@@ -1,6 +1,6 @@
 # fxcmminer v1.0
 
-The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
+The purpose of this software is to fully automate the simultaneous collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
 
 ### Setup
 I use an ESXi server for all my virtual machines, however this will run on any hypervisor and most hardware.
