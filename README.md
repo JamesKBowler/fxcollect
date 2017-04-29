@@ -80,7 +80,9 @@ After all historical data has been collected for the offer, a 'GETLIVE' event is
 ### LiveDataMiner 
 
 On receipt of the 'GETLIVE' event, LiveDataMiner located in live.py, will continue to collect live data from FXCM using a series of time based events from apscheduler. Each event from apscheduler fires off a data collection sequence. Once data is collected a 'LIVEDATA' event is created and placed in the queue for the DatabaseManager.
-###Other classes 
+
+### Other classes 
+
 TimeDelta will provide a range in minutes for each time frame, that will not exceed to 300 bars (data points). This is because the maximum bars return for any one API call to FXCM is 300.
 Using the information from TimeDelta, DateRange will provide a date block which is used to call the API. At the moment this is the only way I could exclude calling for data at the weekends whilst FXCM is closed.
 
