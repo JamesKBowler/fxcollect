@@ -1,6 +1,3 @@
-import logging
-
-
 class Event(object):
     @property
     def typename(self):
