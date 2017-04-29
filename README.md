@@ -1,9 +1,9 @@
 ## fxcmminer v1.0
 
-The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for back testing or live execution.
+The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
 
 ### Setup
-I use an ESXi server for all my virtual machines, however this will run on any hypervisor or hardware:
+I use an ESXi server for all my virtual machines, however this will run on any hypervisor and most hardware.
 
 Specification:  
    2x CPUs  
@@ -38,25 +38,25 @@ I am using on Ubuntu Server 16.04 (without GUI) for testing, however this will r
 6. Create a logs folder in the root directory  
  $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs
  
-7. Set the system time zone to EST  
+7. Set the system time zone to EST, this is important as all data on FXCM servers are stored in EST.
  $ sudo timedatectl set-timezone EST
 
 8. To start the process just execute:  
  $ python ~/fxcmminer/fxcmminer_v1.0/engine.py  
 
-##### This will take about 30 hours to download.
+##### All FXCM data will take about 30 hours to download.
 
 If you need assistance setting this up or find any bugs, please report using the Issue section.
 
-+++++
-TODO:
-+++++
+### TODO:
 
 1. Prioritize queue so that Live data is written to database before historical.
 
 2. Improve logging
 
-2. Clean up code!
+3. Add auto offer removal to the fxscout
+
+4. Clean up code!
 
 
 
