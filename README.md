@@ -17,8 +17,8 @@ I am using on Ubuntu Server 16.04 (without GUI) for testing, however this will r
 
 1. First install all dependencies in the requiements.txt and Python 2.7
 
-2. Install MariaDB 10.x
-https://mariadb.org/download/
+2. Install MariaDB 10.x  
+  https://mariadb.org/download/
 
 3. Setup MariaDB to allow the user 'sec_master' to access the database with read and write permissions.
 
