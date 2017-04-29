@@ -62,7 +62,7 @@ If you need assistance setting this up or find any bugs, please report using the
 
 #### Scout
 
-The process of collecting data is started by executing the engine.py script. This in turn will start the fxscout.py, who's primary job is to scout FXCM for currently tradable instruments (also know as 'offers'). Once the Scout has found 'offers' available, it will also contact the FXCM .xml catalogue and make a local copy to accessed at a later by fxcmminer. If FXCM add another 'offer' the Scout will then make a new local copy of the catalogue. 
+The process of collecting data is started by executing the engine.py script. This in turn will start the fxscout.py, who's primary job is to scout FXCM for currently tradable instruments (also know as 'offers'). Once the Scout has found 'offers' available, it will contact FXCM for the .xml catalogue and make a local copy to be accessed later by fxcmminer. If FXCM add another 'offer' the Scout will then make a new local copy of the catalogue. 
 
 The scout will continue checking FXCM for the entire duration whilst the program is running, and will only place an 'OFFER' event in the events queue on system startup or if a new 'offer' is added in the future.
 
