@@ -1,8 +1,8 @@
-# fxcmminer v1.0
+## fxcmminer v1.0
 
 The purpose of this software is to fully automate the collection of historical and live financial data from FXCM, then store these data in a database ready for back testing or live execution.
 
-Setup
+### Setup
 I use an ESXi server for all my virtual machines, however this will run on any hypervisor.
 
 Hardware or Virtual machine:
@@ -28,21 +28,21 @@ https://mariadb.org/download/
    mysql> GRANT ALL PRIVILEGES ON *.* TO 'sec_master'@'localhost';  
    mysql> FLUSH PRIVILEGES;  
 
-(optional)
+   (optional)  
    $ sudo service mysql restart  
 
-4. Download forexconnect and follow instructions. 
-https://github.com/JamesKBowler/python-forexconnect
+4. Download forexconnect and follow instructions.  
+ https://github.com/JamesKBowler/python-forexconnect  
 
 5. Download this repository and place in a convenient location
 
 6. Create a logs folder in the root directory
-mkdir ~/fxcmminer/fxcmminer_v1.0/logs
+ $ mkdir ~/fxcmminer/fxcmminer_v1.0/logs
 
-To start the process just execute:
-python ~/fxcmminer/fxcmminer_v1.0/engine.py
+7. To start the process just execute:
+ $ python ~/fxcmminer/fxcmminer_v1.0/engine.py  
 
-This will take about 30 hours to download.
+##### This will take about 30 hours to download.
 
 If you need assistance setting this up or find any bugs, please report using the Issue section.
 
