@@ -11,7 +11,7 @@ import re
 class LiveDataMiner(object):
     """
     Creates time based event for collecting FXCM data.
-    
+
     Information on this API
     https://apscheduler.readthedocs.io/en/latest/
     https://github.com/agronholm/apscheduler/
