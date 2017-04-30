@@ -41,7 +41,7 @@ class DatabaseManager(object):
         except (MySQLdb.Error, MySQLdb.Warning) as e:
             log(instrument).debug("[XX] Database Error   : %s.%s | %s" % (db_name, tb_name, e))
             return None
-        
+
         db.close()
 
     @staticmethod
@@ -49,7 +49,7 @@ class DatabaseManager(object):
         """
         On first startup this method will create a new database and
         tables for each offer. 
-        
+
         On second startup it will compare the database with the current offer
         and skip database creation if already present.
         """
@@ -91,14 +91,14 @@ class DatabaseManager(object):
                 tracked.append(db_name.replace('fxcm_bar_', ''))
         else:
             _create_db(fxoffer)
-            
+
         if tracked != []:
             for o in fxoffer:
                 if re.sub('[^A-Za-z0-9]+','',o) not in tracked:
                     _create_db(fxoffer)
 
         events_queue.put(DBReadyEvent(fxoffer))
-        
+
         db.close()
 
     @staticmethod
@@ -137,7 +137,7 @@ class DatabaseManager(object):
             except NameError:
                 # FXCM catalog not always upto date!
                 date = dt(2007,1,1,00,00,00)
-        
+
         db.close()
 
         return date
