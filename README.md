@@ -10,7 +10,7 @@ Specification:
    4GB RAM  
    100GB SSD/HDD (for testing hard drive is fine)  
 
-Total drive usage for the database (excluding OS etc) is 41GB as of 29/04/2017
+Total drive usage for the database (excluding OS etc) from 59 instruments, is 41GB as of 29/04/2017
 
 I am using on Ubuntu Server 16.04 (without GUI) for testing, however this will run on most Linux OS with/without GUI.
 
