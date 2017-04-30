@@ -33,5 +33,5 @@ class TimeDelta(object):
             td = 10080*delta
         elif tf == 'M1':
             td = 44640*delta
-        
+
         return td
