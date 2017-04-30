@@ -13,7 +13,7 @@ import datetime
 class HistoricalCollector(object):
     """
     HistoricalCollector collects historic data from FXCM. 
-    
+
     """
     @staticmethod
     def historical_prices(events_queue, event):
@@ -39,13 +39,13 @@ class HistoricalCollector(object):
                     breakdate = datetime.datetime.now() - datetime.timedelta(minutes = 5)
                     if to_date >= breakdate or fm_date >= breakdate:
                         break
-                            
+
                     try:
                         data = fxc.get_historical_prices(
                             str(instrument), fm_date,
                             to_date, str(time_frame)) 
                         data = [d.__getstate__()[0] for d in data]
-                        
+
                     except (KeyError, IndexError):
                         data = []
 
@@ -65,7 +65,7 @@ class HistoricalCollector(object):
                                            time_delta, fm_date, to_date)
 
                         breakdate = datetime.datetime.now() - datetime.timedelta(minutes = 5)
-                    
+
                     del data
 
         fxoffer = event.fxoffer
