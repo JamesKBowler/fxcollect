@@ -3,7 +3,7 @@
 The purpose of this software is to fully automate the simultaneous collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
 
 ### Setup
-I use an ESXi server for all my virtual machines, however this will run on any hypervisor and most hardware.
+The development has been carried out on an ESXi server, however this will run on any hypervisor and most hardware.
 
 Specification:  
    2x CPUs  
@@ -12,7 +12,8 @@ Specification:
 
 Total drive usage for the database (excluding OS etc) from 59 instruments, is 41GB as of 29/04/2017
 
-I am using on Ubuntu Server 16.04 (without GUI) for testing, however this will run on most Linux OS with/without GUI.
+Operating System:  
+   Ubuntu Server 16.04 (without GUI) for testing, however this will run on most Linux OS with/without GUI.  
 
 1. First install all dependencies in the requiements.txt and Python 2.7
 
