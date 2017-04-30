@@ -47,7 +47,7 @@ class Scout(mp.Process):
                         if symbol['price-stream'] == 'Default':
                             if symbol['name'] in fxo:
                                 offers.append(symbol['name'])
-                
+
                 tracked = [x for x in offers if x not in tracked]
 
                 self._reporting(tracked)
@@ -69,6 +69,4 @@ class Scout(mp.Process):
 
     def run(self):
         self._scouting()
-
-
-
+        
