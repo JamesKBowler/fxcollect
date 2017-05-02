@@ -45,6 +45,7 @@ class LiveDataMiner(object):
                 elif event.type == 'GETLIVE':
                     offer = event.offer
                     if offer not in self.live_offers:
+                        print("Starting Live : %s" % offer)
                         self.live_offers.append(offer)
 
     def fxc_login(self):
