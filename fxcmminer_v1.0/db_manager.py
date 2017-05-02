@@ -42,26 +42,27 @@ class DatabaseManager(object):
             log(instrument).debug("[XX] Database Error   : %s.%s | %s" % (db_name, tb_name, e))
             return None
 
+        cur.close()
         db.close()
 
     @staticmethod
-    def database_check(events_queue, event):
+    def database_check(hist_queue, event):
         """
         On first startup this method will create a new database and
         tables for each offer. 
-
-        On second startup it will compare the database with the current offer
-        and skip database creation if already present.
+        
+        On second startup it will compare the database with the
+        current offer and if the offer is not currenlty being tracked,
+        it will create a new database and tables.
         """
         def _create_db(offer):
             """
             Creates databases and tables for any new offers
             """
             for o, time_frames in offer.iteritems():
-                logfile = re.sub('[^A-Za-z0-9]+','',o)
                 db_bar = 'fxcm_bar_%s' % (re.sub('[^A-Za-z0-9]+','',o))
                 cur.execute("CREATE DATABASE IF NOT EXISTS %s;" % (db_bar))
-                log(logfile).debug("[!!] Database Created : %s" % db_bar)
+                log(o).debug("[!!] Database Created : %s" % db_bar)
                 for time_frame in time_frames:
                     tb_bar = 'tbl_%s_%s' % (re.sub('[^A-Za-z0-9]+','',o), time_frame)                                              
                     cur.execute("CREATE TABLE IF NOT EXISTS %s.%s ( \
@@ -77,7 +78,7 @@ class DatabaseManager(object):
                                  `volume` BIGINT NULL, \
                                 PRIMARY KEY (`date`)) \
                                 ENGINE=InnoDB;" % (db_bar, tb_bar))                
-                    log(logfile).debug("[!!] Table Created    : %s" % tb_bar)
+                    log(o).debug("[!!] Table Created    : %s" % tb_bar)
 
         db = MySQLdb.connect(host=s.DB_HOST,
                              user=s.DB_USER,
@@ -91,14 +92,15 @@ class DatabaseManager(object):
                 tracked.append(db_name.replace('fxcm_bar_', ''))
         else:
             _create_db(fxoffer)
-
+            
         if tracked != []:
             for o in fxoffer:
                 if re.sub('[^A-Za-z0-9]+','',o) not in tracked:
                     _create_db(fxoffer)
 
-        events_queue.put(DBReadyEvent(fxoffer))
+        hist_queue.put(DBReadyEvent(fxoffer))
 
+        cur.close()
         db.close()
 
     @staticmethod
@@ -137,7 +139,8 @@ class DatabaseManager(object):
             except NameError:
                 # FXCM catalog not always upto date!
                 date = dt(2007,1,1,00,00,00)
-
+                
+        cur.close()
         db.close()
 
         return date
