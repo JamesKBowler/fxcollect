@@ -1,5 +1,5 @@
 from db_manager import DatabaseManager
-from historical import HistoricalCollector
+from  historical import HistoricalCollector
 from live import LiveDataMiner
 from fxscout import Scout
 import forexconnect as fx
@@ -11,38 +11,38 @@ from time import sleep
 
 class Engine(object):
     def __init__(self):
-        self.events_queue = mp.Queue(100)
+        self.hist_queue = mp.Queue(100)
+        self.live_queue = mp.Queue(600)
 
-    def _mining(self):
+    def _hist_mining(self):
         """
         Collect events from the Queue
         """
-        Scout(self.events_queue).start()
-
         while True:
             try:
-                event = self.events_queue.get(False)
+                event = self.hist_queue.get(False)
             except queue.Empty:
                 sleep(0.0001)            
             else:
-                if event.type == 'LIVEDATA':
+                if event.type == 'HISTDATA':
                     mp.Process(target=DatabaseManager(
                     ).write_data, args=(event,)).start()
-                elif event.type == 'GETLIVE':
-                    mp.Process(target=LiveDataMiner(
-                    self.events_queue, event).start_timers()).start()
-                elif event.type == 'HISTDATA':
-                    mp.Process(target=DatabaseManager(
-                    ).write_data, args=(event,)).start()
+
                 elif event.type == 'DBREADY':
                     mp.Process(target=HistoricalCollector(
-                    ).historical_prices, args=(self.events_queue, event,)).start()                    
+                    ).historical_prices, args=(self.hist_queue,
+                                               self.live_queue, event,)
+                                               ).start()                    
                 elif event.type == 'OFFER':
                     mp.Process(target=DatabaseManager(
-                    ).database_check, args=(self.events_queue, event,)).start()
+                    ).database_check, args=(self.hist_queue, event,)
+                                            ).start()
 
     def start(self):
-        self._mining()
+        print('Engines Running..')
+        Scout(self.hist_queue).start()
+        mp.Process(target=self._hist_mining).start()
+        LiveDataMiner(self.live_queue).start()
 
 
 if __name__ == "__main__":
