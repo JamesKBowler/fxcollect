@@ -1,130 +1,111 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
+from apscheduler.executors.pool import ProcessPoolExecutor
 from db_manager import DatabaseManager
+import multiprocessing as mp
+import Queue as queue
+from time import sleep
 import time
 import datetime
 import forexconnect as fx
 import settings as s
 from event import LiveDataEvent
 import re
+import logging
+from logging import DEBUG
 
 class LiveDataMiner(object):
     """
     Creates time based event for collecting FXCM data.
-
     Information on this API
     https://apscheduler.readthedocs.io/en/latest/
     https://github.com/agronholm/apscheduler/
     """
-    def __init__(self, events_queue, event):
+    def __init__(self, live_queue):
+        """
+        """
+        self.live_queue = live_queue
+        self.fxc = self.fxc_login()
+        self.start_scheduler()
+        self.live_offers = []
+        self.live_data_session()
+        logging.basicConfig(filename=s.LIVE_LOG,level=DEBUG)
+
+    def live_data_session(self):
+        """
+        """
         while True:
             try:
-                self.fxc = fx.ForexConnectClient(str(s.FX_USER),
-                                                 str(s.FX_PASS),
-                                                 str(s.FX_ENVR))
-                if self.fxc.is_connected() == True:
+                event = self.live_queue.get(False)
+            except queue.Empty:
+                sleep(0.0001)            
+            else:
+                if event.type == 'LIVEDATA':
+                    mp.Process(target=DatabaseManager(
+                    ).write_data, args=(event,)).start()
+                elif event.type == 'GETLIVE':
+                    offer = event.offer
+                    if offer not in self.live_offers:
+                        self.live_offers.append(offer)
+
+    def fxc_login(self):
+        """
+        Logs into ForexConnectClient and returns a session. 
+        """
+        while 1:
+            try:
+                fxc = fx.ForexConnectClient(s.FX_USER, s.FX_PASS,
+                                            s.FX_ENVR, s.URL
+                )
+                if fxc.is_connected() == True:
+                    print("Live login sucess")
                     break
             except RuntimeError:
-                pass
-
-        self.events_queue = events_queue
-        self.offer = event.offer
-        self.executors = {'processpool': ProcessPoolExecutor(100)
+                print("Live login failed - retrying")
+                sleep(0.1)
+                
+        return fxc
+     
+    def start_scheduler(self):
+        """
+        APS Scheduler Jobs
+        """
+        executors = {'processpool': ProcessPoolExecutor(100)
         }
-
-        self.job_defaults = {
+        job_defaults = {
             'coalesce': True,
-            'max_instances': 12
+            'max_instances': 50,
+            'misfire_grace_time' : 5
         }
-        self.sched = BackgroundScheduler(executors=self.executors)
+        sched = BackgroundScheduler(executors=executors, job_defaults=job_defaults)
+        sched.add_job(self.get_live, 'cron', minute='0-59', args=['m1'])
+        sched.add_job(self.get_live, 'cron', minute='0,5,10,15,20,25,30,35,40,45,50,55', args=['m5'])
+        sched.add_job(self.get_live, 'cron', minute='0,15,30,45', args=['m15'])
+        sched.add_job(self.get_live, 'cron', minute='0,30', args=['m30'])
+        sched.add_job(self.get_live, 'cron', hour='0-23', args=['H1'])
+        sched.add_job(self.get_live, 'cron', hour='0,2,4,6,8,10,12,14,16,18,20,22', args=['H2'])
+        sched.add_job(self.get_live, 'cron', hour='0,4,8,12,16,20', args=['H4'])
+        sched.add_job(self.get_live, 'cron', hour='0,8,16', args=['H8'])
+        sched.add_job(self.get_live, 'cron', hour='0', args=['D1'])
+        sched.add_job(self.get_live, 'cron', day_of_week='sun',hour='17', args=['W1'])
+        sched.add_job(self.get_live, 'cron', day='1', hour='17', args=['M1'])
+        sched.start()
 
-        self.sched.add_job(self.min_1,'cron', minute='0-59')
-        self.sched.add_job(self.min_5, 'cron', minute='0,5,10,15,20,25,30,35,40,45,50,55')
-        self.sched.add_job(self.min_15, 'cron', minute='0,15,30,45')
-        self.sched.add_job(self.min_30, 'cron', minute='0,30')
-        self.sched.add_job(self.hour_1, 'cron', hour='0-23')
-        self.sched.add_job(self.hour_2, 'cron', hour='0,2,4,6,8,10,12,14,16,18,20,22')
-        self.sched.add_job(self.hour_4, 'cron', hour='0,4,8,12,16,20')
-        self.sched.add_job(self.hour_8, 'cron', hour='0,8,16')
-        self.sched.add_job(self.day_1, 'cron', hour='0')
-        self.sched.add_job(self.week_1, 'cron', day_of_week='sun',hour='17')
-        self.sched.add_job(self.month_1, 'cron', day='1', hour='17')
-
-    def min_1(self):
-        tf = 'm1'
-        p = 1
-        self.get_live(tf, p, self.fxc)
-
-    def min_5(self):
-        tf = 'm5'
-        p = 2
-        self.get_live(tf, p, self.fxc)
-
-    def min_15(self):
-        tf = 'm15'
-        p = 3
-        self.get_live(tf, p, self.fxc)
-
-    def min_30(self):
-        tf = 'm30'
-        p = 4
-        self.get_live(tf, p, self.fxc)
-
-    def hour_1(self):
-        tf = 'H1'
-        p = 5
-        self.get_live(tf, p, self.fxc)
-
-    def hour_2(self):
-        tf = 'H2'
-        p = 6
-        self.get_live(tf, p, self.fxc)
-
-    def hour_4(self):
-        tf = 'H4'
-        p = 7
-        self.get_live(tf, p, self.fxc)
-
-    def hour_8(self):
-        tf = 'H8'
-        p = 8
-        self.get_live(tf, p, self.fxc)
-
-    def day_1(self):
-        tf = 'D1'
-        p = 9
-        self.get_live(tf, p, self.fxc)
-
-    def week_1(self):
-        tf = 'W1'
-        p = 10
-        self.get_live(tf, p, self.fxc)
-
-    def month_1(self):
-        tf = 'M1'
-        p = 11
-        self.get_live(tf, p, self.fxc)
-
-    def get_live(self, time_frame, priority, fxc):
+    def get_live(self, time_frame):
         """
         """
-        fm_date = DatabaseManager().return_date(self.offer, time_frame)
-        fm_date = fm_date + datetime.timedelta(minutes = 1)
-        to_date = datetime.datetime.now()
-        instrument = self.offer
-        try:
-            data = fxc.get_historical_prices(
-                   str(instrument), fm_date,
-                   to_date, str(time_frame))
+        for offer in self.live_offers:
+            db_date = DatabaseManager().return_date(offer, time_frame) 
+            fm_date = db_date + datetime.timedelta(minutes = 1)
+            tdn = datetime.datetime.now()
+            to_date = tdn.replace(second=00, microsecond=00)
+            logging.debug("!!] Live Calling dates  : %s From %s : To %s" % (offer, fm_date, to_date))
+            data = self.fxc.get_historical_prices(str(offer), fm_date,
+                   to_date, str(time_frame)
+            )
             data = [d.__getstate__()[0] for d in data]
-        except (KeyError, IndexError):
-            data = []
+            data = [x for x in data if db_date not in x.values()]
+            if data != []:
+                self.live_queue.put(LiveDataEvent(
+                data, offer, time_frame))
 
-        if data != []:
-            self.events_queue.put(LiveDataEvent(
-            data, instrument, time_frame))
-
-        del data
-
-    def start_timers(self):
-        self.sched.start()
+            del data
