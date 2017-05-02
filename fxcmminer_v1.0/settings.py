@@ -8,5 +8,6 @@ DB_USER = 'sec_master'
 DB_PASS = 'password'
 DB_HOST = 'localhost'
 XML_FILE = 'catalog.xml'
-LOGDIR = 'logs/'
+LOGDIR = '<put your directory path here>'
+LIVE_LOG = '<put your directory path here>.live.log'
 TIME_FRAMES = ['M1','W1','D1','H8', 'H4', 'H2', 'H1','m30', 'm15', 'm5', 'm1']
