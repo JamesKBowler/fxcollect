@@ -28,9 +28,20 @@ class Scout(mp.Process):
         Continuiosly poles FXCM for avaiable offers to trade.
         """
         url = "http://pricehistory.fxcorporate.com/pricearchive/catalog.xml"
-        fxc = fx.ForexConnectClient(str(s.FX_USER),
-                                    str(s.FX_PASS),
-                                    str(s.FX_ENVR))
+        
+        while True:
+            try:
+                fxc = fx.ForexConnectClient(s.FX_USER,
+                                            s.FX_PASS,
+                                            s.FX_ENVR,
+                                            s.URL)
+                if fxc.is_connected() == True:
+                    break
+            except RuntimeError:
+                pass
+
+        print("Scout started..")
+
         offers = []
         tracked = []
         fxo = []
@@ -47,7 +58,7 @@ class Scout(mp.Process):
                         if symbol['price-stream'] == 'Default':
                             if symbol['name'] in fxo:
                                 offers.append(symbol['name'])
-
+                
                 tracked = [x for x in offers if x not in tracked]
 
                 self._reporting(tracked)
@@ -60,12 +71,14 @@ class Scout(mp.Process):
         """
         Reports the FXCM offers to the Database Manager.
         """
+        #tracked = ['XAU/USD'] #, 'XAG/USD', 'GBP/USD']
         for x in tracked:
             fxoffer = defaultdict(dict)
             fxoffer[x] = self.tframes
             if dict(fxoffer) != {}:
                 self.events_queue.put(OfferEvent(dict(fxoffer)))
-                sleep(1) # Slows the starting process
+                print("[^^] Tracked : %s") % x
+                sleep(5) # Slows the starting process
 
     def run(self):
         self._scouting()
