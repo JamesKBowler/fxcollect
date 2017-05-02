@@ -93,19 +93,20 @@ class LiveDataMiner(object):
     def get_live(self, time_frame):
         """
         """
-        for offer in self.live_offers:
-            db_date = DatabaseManager().return_date(offer, time_frame) 
-            fm_date = db_date + datetime.timedelta(minutes = 1)
-            tdn = datetime.datetime.now()
-            to_date = tdn.replace(second=00, microsecond=00)
-            logging.debug("!!] Live Calling dates  : %s From %s : To %s" % (offer, fm_date, to_date))
-            data = self.fxc.get_historical_prices(str(offer), fm_date,
-                   to_date, str(time_frame)
-            )
-            data = [d.__getstate__()[0] for d in data]
-            data = [x for x in data if db_date not in x.values()]
-            if data != []:
-                self.live_queue.put(LiveDataEvent(
-                data, offer, time_frame))
+        if self.live_offers != []:
+            for offer in self.live_offers:
+                db_date = DatabaseManager().return_date(offer, time_frame) 
+                fm_date = db_date + datetime.timedelta(minutes = 1)
+                tdn = datetime.datetime.now()
+                to_date = tdn.replace(second=00, microsecond=00)
+                logging.debug("!!] Live Calling dates  : %s From %s : To %s" % (offer, fm_date, to_date))
+                data = self.fxc.get_historical_prices(str(offer), fm_date,
+                       to_date, str(time_frame)
+                )
+                data = [d.__getstate__()[0] for d in data]
+                data = [x for x in data if db_date not in x.values()]
+                if data != []:
+                    self.live_queue.put(LiveDataEvent(
+                    data, offer, time_frame))
 
-            del data
+                del data
