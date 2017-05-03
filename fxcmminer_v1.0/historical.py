@@ -10,6 +10,7 @@ from db_manager import DatabaseManager
 from dates import DateRange
 import datetime
 
+
 class HistoricalCollector(object):
     """
     HistoricalCollector collects historic data from FXCM. 
@@ -32,40 +33,42 @@ class HistoricalCollector(object):
                                            time_delta, fm_date, to_date)
             log(instrument).debug("[>>] Starting Block   : %s %s %s %s" % \
                                 (instrument, str(fm_date), str(to_date), time_frame))
+            breakout = 0
+            while True:
+                breakdate = datetime.datetime.now() # - datetime.timedelta(minutes = 5)
+                if to_date >= breakdate or fm_date >= breakdate:
+                    breakout = 1
+                    d = datetime.datetime.now()
+                    to_date = d.replace(second=00, microsecond=00)
 
-            if to_date <= datetime.datetime.now():
-                while True:
-                    breakdate = datetime.datetime.now() - datetime.timedelta(minutes = 5)
-                    if to_date >= breakdate or fm_date >= breakdate:
-                        break
-                            
-                    try:
-                        data = fxc.get_historical_prices(
-                            str(instrument), fm_date,
-                            to_date, str(time_frame)) 
-                        data = [d.__getstate__()[0] for d in data]
-                        
-                    except (KeyError, IndexError):
-                        data = []
+                try:
+                    data = fxc.get_historical_prices(
+                        str(instrument), fm_date,
+                        to_date, str(time_frame)) 
+                    data = [d.__getstate__()[0] for d in data]
 
-                    if data != []:
-                        hist_queue.put(HistDataEvent(
-                            data, instrument, time_frame))
+                except (KeyError, IndexError):
+                    data = []
 
-                        log(instrument).debug("[:)] Data Collected   : %s %s %s %s" % \
-                            (instrument, str(fm_date), str(to_date), time_frame))
-                        fm_date, to_date = DateRange().get_date_block(
-                                           time_delta, fm_date, to_date)
+                if data != []:
+                    hist_queue.put(HistDataEvent(
+                        data, instrument, time_frame))
 
-                    else:
-                        log(instrument).debug("[??] Skipping Block   : %s %s %s %s" % \
-                                    (instrument, str(fm_date), str(to_date), time_frame))
-                        fm_date, to_date = DateRange().get_date_block(
-                                           time_delta, fm_date, to_date)
+                    log(instrument).debug("[:)] Data Collected   : %s %s %s %s" % \
+                        (instrument, str(fm_date), str(to_date), time_frame))
+                    fm_date, to_date = DateRange().get_date_block(
+                                       time_delta, fm_date, to_date)
 
-                        breakdate = datetime.datetime.now() - datetime.timedelta(minutes = 5)
-                    
-                    del data
+                else:
+                    log(instrument).debug("[??] Skipping Block   : %s %s %s %s" % \
+                                (instrument, str(fm_date), str(to_date), time_frame))
+                    fm_date, to_date = DateRange().get_date_block(
+                                       time_delta, fm_date, to_date)
+
+                del data
+                
+                if breakout == 1:
+                    break
 
         fxoffer = event.fxoffer
 
@@ -87,4 +90,4 @@ class HistoricalCollector(object):
 
             log(offer).debug("[<>] Offer Complete   : %s |%s|" % (offer, time_frame))
         print("[^^] Hist complete : %s" % offer)
-        live_queue.put(LiveReadyEvent(offer)) 
+        live_queue.put(LiveReadyEvent(offer))
