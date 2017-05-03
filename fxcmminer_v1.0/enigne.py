@@ -1,5 +1,6 @@
 from db_manager import DatabaseManager
 from  historical import HistoricalCollector
+from timekeeper import LiveEventTimer
 from live import LiveDataMiner
 from fxscout import Scout
 import forexconnect as fx
@@ -22,7 +23,7 @@ class Engine(object):
             try:
                 event = self.hist_queue.get(False)
             except queue.Empty:
-                sleep(0.0001)            
+                sleep(0.1)            
             else:
                 if event.type == 'HISTDATA':
                     mp.Process(target=DatabaseManager(
@@ -32,7 +33,7 @@ class Engine(object):
                     mp.Process(target=HistoricalCollector(
                     ).historical_prices, args=(self.hist_queue,
                                                self.live_queue, event,)
-                                               ).start()                    
+                                               ).start()
                 elif event.type == 'OFFER':
                     mp.Process(target=DatabaseManager(
                     ).database_check, args=(self.hist_queue, event,)
@@ -41,9 +42,9 @@ class Engine(object):
     def start(self):
         print('Engines Running..')
         Scout(self.hist_queue).start()
-        mp.Process(target=self._hist_mining).start()
-        LiveDataMiner(self.live_queue).start()
-
+        LiveEventTimer(self.live_queue).start()
+        mp.Process(target=LiveDataMiner(self.live_queue).live_mine).start()
+        self._hist_mining()
 
 if __name__ == "__main__":
     Engine().start()
