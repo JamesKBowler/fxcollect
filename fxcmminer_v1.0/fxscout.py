@@ -58,28 +58,27 @@ class Scout(mp.Process):
                         if symbol['price-stream'] == 'Default':
                             if symbol['name'] in fxo:
                                 offers.append(symbol['name'])
-                
+
                 tracked = [x for x in offers if x not in tracked]
 
                 self._reporting(tracked)
 
             # TODO : Remove offer from Live tracking
 
-            sleep(0.01)
+            sleep(0.1)
 
     def _reporting(self, tracked):
         """
         Reports the FXCM offers to the Database Manager.
         """
-        #tracked = ['XAU/USD'] #, 'XAG/USD', 'GBP/USD']
+        #tracked = ['XAU/USD', 'XAG/USD', 'GBP/USD']
         for x in tracked:
             fxoffer = defaultdict(dict)
             fxoffer[x] = self.tframes
             if dict(fxoffer) != {}:
                 self.events_queue.put(OfferEvent(dict(fxoffer)))
-                print("[^^] Tracked : %s") % x
-                sleep(5) # Slows the starting process
+                print("[>>] Tracked : %s") % x
+                sleep(20) # Slows the starting process
 
     def run(self):
         self._scouting()
-        
