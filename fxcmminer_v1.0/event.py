@@ -1,3 +1,6 @@
+import logging
+
+
 class Event(object):
     @property
     def typename(self):
@@ -46,12 +49,25 @@ class HistDataEvent(Event):
 
 class LiveReadyEvent(Event):
     def __init__(self, offer):
-        self.type = 'GETLIVE'
+        self.type = 'LIVEREADY'
         self.offer = offer
 
     def __str__(self):
         return "Type: %s, Atrr: %s" % (
             str(self.type), str(self.offer)
+        )
+
+    def __repr__(self):
+        return str(self)
+
+class GetLiveEvent(Event):
+    def __init__(self, time_frame):
+        self.type = 'GETLIVE'
+        self.time_frame = time_frame
+
+    def __str__(self):
+        return "Type: %s, Atrr: %s" % (
+            str(self.type), str(self.time_frame)
         )
 
     def __repr__(self):
