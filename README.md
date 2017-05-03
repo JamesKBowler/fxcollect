@@ -81,11 +81,14 @@ The schema is one database per offer as this will provide plenty of space for fu
 After a database check or creation has been carried out, a 'DBReady' event is placed into the queue, which is then passed over to the HistoricalCollector class located in historical.py .
 The HistoricalCollector asks the DatabaseManager for the lastest date in the database, if this is a new offer or first time system startup, the DatabaseManager will return a date from the .xml catalogue. If the catalog does not have a corresponding date an artificial low date of 2007-01-01 00:00:00 is returned.
 Now the HistoricalCollector has a starting point, it will begin to call FXCM's API and collect data. Once data is returned, a 'HISTDATA' event is created and placed in the queue, which in turn will be passed to the DatabaseManager and written to the database.
-After all historical data has been collected for the offer, a 'GETLIVE' event is placed into the queue and the HistoricalCollector process will exit.
+After all historical data has been collected for the offer, a 'LIVEREADY' event is placed into the queue and the HistoricalCollector process will exit.
+
+#### TimeKeeper
+The apscheduler will fire off at market invertals such as 1 minute, 5 minutes etc. On each fire a 'GETLIVE' event is placed into the queue.
 
 #### LiveDataMiner 
 
-On receipt of the 'GETLIVE' event, LiveDataMiner located in live.py, will continue to collect live data using a series of time based events from apscheduler. Each event from apscheduler fires off a data collection sequence. Once data is collected a 'LIVEDATA' event is created and placed in the queue for the DatabaseManager and written to the database.
+On receipt of the 'LIVEREADY' event, LiveDataMiner located in live.py, will update its current list of 'LIVEREADY' offers, and is now waiting for a 'GETLIVE' event from TimeKeeper. On receipt of an 'GETLIVE' event, LiveDataMiner will loop through the list of live ready offers for the corrsponding 'GETLIVE' event time_frame. Once data is collected a 'LIVEDATA' event is placed into the queue for the processing by the DatabaseManager and written to the database.
 
 #### Other classes 
 
