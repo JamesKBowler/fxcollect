@@ -52,7 +52,7 @@ If you need assistance setting this up or find any bugs, please report using the
 
 ### TODO:
 
-1. Prioritize queue so that Live data is written to database before historical.
+1. Prioritize queue so that lower time frame data is written to database before higher time frame.
 
 2. Improve logging
 
@@ -94,6 +94,9 @@ On receipt of the 'LIVEREADY' event, LiveDataMiner located in live.py, will upda
 
 TimeDelta will provide a range in minutes for each time frame, that will not exceed to 300 bars (data points). This is because the maximum bars return for any one API call to FXCM is 300.
 Using the information from TimeDelta, DateRange will provide a date block which is used when calling the API. At the moment this is the only way I could exclude calling for data at the weekends whilst FXCM is closed, and due to the nature of the foreign exchange, holidays are not equal in all countries.
+
+#### Queues
+There are two queues one for historical data and one for live data.
 
 # License Terms  
 
