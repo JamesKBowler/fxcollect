@@ -1,5 +1,3 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ProcessPoolExecutor
 from db_manager import DatabaseManager
 import multiprocessing as mp
 import Queue as queue
@@ -12,6 +10,7 @@ from event import LiveDataEvent
 import re
 import logging
 from logging import DEBUG
+
 
 class LiveDataMiner(object):
     """
@@ -42,21 +41,39 @@ class LiveDataMiner(object):
 
         return fxc
 
-    def _get_live(self, event, fxc, live_offers):
+    def _get_live(self, event, live_offers):
         """
         """
+        def getdata(offer, time_frame, fxc):
+            db_date = DatabaseManager().return_date(offer, time_frame) 
+            fm_date = db_date + datetime.timedelta(minutes = 1)
+            tdn = datetime.datetime.now()
+            to_date = tdn.replace(second=00, microsecond=00)
+            data = fxc.get_historical_prices(str(offer), fm_date,
+                   to_date, str(time_frame)
+            )
+            data = [d.__getstate__()[0] for d in data]
+            data = [x for x in data if db_date not in x.values()]
+            return data
+
+        fxc = self._fxc_login()
+        missed_offers = []
         time_frame = event.time_frame
         if live_offers != []:
-            for offer in live_offers:
-                db_date = DatabaseManager().return_date(offer, time_frame) 
-                fm_date = db_date + datetime.timedelta(minutes = 1)
-                tdn = datetime.datetime.now()
-                to_date = tdn.replace(second=00, microsecond=00)
-                data = fxc.get_historical_prices(str(offer), fm_date,
-                       to_date, str(time_frame)
-                )
-                data = [d.__getstate__()[0] for d in data]
-                data = [x for x in data if db_date not in x.values()]
+            for offer in live_offers:                
+                data = getdata(offer, time_frame, fxc)
+                if data != []:
+                    self.live_queue.put(LiveDataEvent(
+                    data, offer, time_frame))
+                else:
+                    missed_offers.append(offer)
+
+                del data
+
+        if missed_offers != []:
+            sleep(30)
+            for offer in missed_offers:
+                data = getdata(offer, time_frame, fxc)
                 if data != []:
                     self.live_queue.put(LiveDataEvent(
                     data, offer, time_frame))
@@ -77,11 +94,11 @@ class LiveDataMiner(object):
                     mp.Process(target=DatabaseManager(
                     ).write_data, args=(event,)).start()
                 elif event.type == 'GETLIVE':
-                    mp.Process(self._get_live(event, fxc, live_offers)).start()
+                    mp.Process(target=self._get_live, args=(event, live_offers,)).start()
                 elif event.type == 'LIVEREADY':
                     if event.offer not in live_offers:
                         print("[oo] Live Started %s" % event.offer)
                         live_offers.append(event.offer)
-                    
+
     def live_mine(self):
         self._live_data_session(self._fxc_login())
