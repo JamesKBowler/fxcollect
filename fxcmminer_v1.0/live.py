@@ -71,7 +71,6 @@ class LiveDataMiner(object):
                 del data
 
         if missed_offers != []:
-            sleep(30)
             for offer in missed_offers:
                 data = getdata(offer, time_frame, fxc)
                 if data != []:
