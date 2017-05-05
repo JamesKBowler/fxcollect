@@ -47,9 +47,7 @@ class LiveEventTimer(object):
 
     def _put_event(self, time_frame):
         self.live_queue.put(GetLiveEvent(time_frame))
-        
-        
-        
+
     def start(self):
         print("Time Keeper Started")
         self._start_scheduler()
