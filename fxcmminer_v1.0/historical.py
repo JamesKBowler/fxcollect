@@ -22,7 +22,7 @@ class HistoricalCollector(object):
         Contacts the database and retrives the latest date, then continues
         with the historical data mining to the present date
         """
-        def collect_data(fxc, instrument, time_frame, fm_date):
+        def collect_data(fxc, instrument, time_frame, dbdate):
             """
             Gets the data
             """      
@@ -30,7 +30,7 @@ class HistoricalCollector(object):
 
             to_date = None
             fm_date, to_date = DateRange().get_date_block(
-                                           time_delta, fm_date, to_date)
+                                           time_delta, dbdate, to_date)
             log(instrument).debug("[>>] Starting Block   : %s %s %s %s" % \
                                 (instrument, str(fm_date), str(to_date), time_frame))
             breakout = 0
@@ -46,6 +46,7 @@ class HistoricalCollector(object):
                         str(instrument), fm_date,
                         to_date, str(time_frame)) 
                     data = [d.__getstate__()[0] for d in data]
+                    data = [x for x in data if dbdate not in x.values()]
 
                 except (KeyError, IndexError):
                     data = []
@@ -84,8 +85,8 @@ class HistoricalCollector(object):
 
         for offer, time_frames in fxoffer.iteritems():
             for time_frame in time_frames:
-                date = DatabaseManager().return_date(offer, time_frame)
-                collect_data(fxc, offer, time_frame, date)
+                dbdate = DatabaseManager().return_date(offer, time_frame)
+                collect_data(fxc, offer, time_frame, dbdate)
                 log(offer).debug("[^^] TFrame Complete  : %s |%s|" % (offer, time_frame))
 
             log(offer).debug("[<>] Offer Complete   : %s |%s|" % (offer, time_frame))
