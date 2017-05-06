@@ -25,7 +25,7 @@ Operating System:
    $ mysql -u root -p  
 
    mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';  
-   mysql> GRANT ALL PRIVILEGES ON *.* TO 'sec_master'@'localhost';  
+   mysql> GRANT ALL PRIVILEGES ON '*.*' TO 'sec_master'@'localhost';  
    mysql> FLUSH PRIVILEGES;  
    mysql> set global max_connections = 1000;  
 
