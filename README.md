@@ -22,15 +22,15 @@ Operating System:
 
 3. Setup MariaDB to allow the user 'sec_master' to access the database with read and write permissions.
 
-   `$ mysql -u root -p  `
+   `$ mysql -u root -p`  
  
-   `mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';  `
-   `mysql> GRANT ALL PRIVILEGES ON '*.*' TO 'sec_master'@'localhost';  `
-   `mysql> FLUSH PRIVILEGES;  `
-   `mysql> set global max_connections = 1000;  `
+   `mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';`  
+   `mysql> GRANT ALL PRIVILEGES ON '*.*' TO 'sec_master'@'localhost';`  
+   `mysql> FLUSH PRIVILEGES;`  
+   `mysql> set global max_connections = 1000;`  
 
    (optional)  
-   `$ sudo service mysql restart  `
+   `$ sudo service mysql restart`  
 
 4. Download forexconnect and follow instructions.  
  https://github.com/JamesKBowler/python-forexconnect  
@@ -38,13 +38,13 @@ Operating System:
 5. Download this repository and place in a convenient location
 
 6. Create a logs folder in the root directory  
- `$ mkdir ~/fxcmminer/fxcmminer_v1.0/logs  `
+ `$ mkdir ~/fxcmminer/fxcmminer_v1.0/logs`  
  
 7. Set the system time zone to EST, this is important as all data on FXCM servers are stored in EST.  
- `$ sudo timedatectl set-timezone EST  `
+ `$ sudo timedatectl set-timezone EST`  
 
 8. To start the process just execute:  
- `$ python ~/fxcmminer/fxcmminer_v1.0/engine.py  `
+ `$ python ~/fxcmminer/fxcmminer_v1.0/engine.py`  
 
 ##### All FXCM data will take about 30 hours to download.
 
