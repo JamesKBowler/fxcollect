@@ -47,7 +47,7 @@ class LiveDataMiner(object):
         def getdata(offer, time_frame, fxc):
             db_date = DatabaseManager().return_date(offer, time_frame) 
             fm_date = db_date + datetime.timedelta(minutes = 1)
-            tdn = datetime.datetime.now()
+            tdn = datetime.datetime.now() + datetime.timedelta(minutes=1)
             to_date = tdn.replace(second=00, microsecond=00)
             data = fxc.get_historical_prices(str(offer), fm_date,
                    to_date, str(time_frame)
