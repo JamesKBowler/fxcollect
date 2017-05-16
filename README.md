@@ -40,8 +40,8 @@ Operating System:
 6. Create a logs folder in the root directory  
  `$ mkdir ~/fxcmminer/fxcmminer_v1.0/logs`  
  
-7. Set the system time zone to EST, this is important as all data on FXCM servers are stored in EST.  
- `$ sudo timedatectl set-timezone EST`  
+7. Set the system time zone to America/New_York, this is important as all data on FXCM servers are stored in America/New_York time zone.  
+ `$ sudo timedatectl set-timezone America/New_York`  
 
 8. To start the process just execute:  
  `$ python ~/fxcmminer/fxcmminer_v1.0/engine.py`  
