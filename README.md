@@ -1,4 +1,4 @@
-# fxcmminer v1.0
+# fxcmminer v1.1
 
 The purpose of this software is to fully automate the simultaneous collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
 
@@ -7,7 +7,7 @@ The development has been carried out on an ESXi server, however this will run on
 
 Specification:  
    2x CPUs  
-   4GB RAM  
+   2GB RAM  
    100GB SSD/HDD (for testing hard drive is fine)  
 
 Total drive usage for the database (excluding OS etc) from 59 instruments, is 41GB as of 29/04/2017
