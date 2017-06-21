@@ -38,7 +38,7 @@ Operating System:
 5. Download this repository and place in a convenient location
 
 6. Create a logs folder in the root directory  
- `$ mkdir ~/fxcmminer/fxcmminer_v1.0/logs`  
+ `$ mkdir ~/fxcmminer_1.1/logs/live.log`  
  
 7. Set the system time zone to UTC, this is important as all data on FXCM servers are stored in UTC time zone.  
  `$ sudo timedatectl set-timezone UTC`  
