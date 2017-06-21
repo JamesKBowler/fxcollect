@@ -2,7 +2,8 @@ SELECT CONCAT('drop database ',schema_name,' ;') AS stmt
   FROM information_schema.schemata
  WHERE schema_name LIKE 'fxcm\_%' ESCAPE '\\' 
  ORDER BY schema_name;
- 
+
+## All Default Offers ##
 drop database fxcm_bar_AUDCAD ;   
 drop database fxcm_bar_AUDCHF ;   
 drop database fxcm_bar_AUDJPY ;   
@@ -61,9 +62,11 @@ drop database fxcm_bar_USOil ;
 drop database fxcm_bar_XAGUSD ;   
 drop database fxcm_bar_XAUUSD ;   
 drop database fxcm_bar_ZARJPY ;
+drop database fxcm_bar_USDJPY ; 
+drop database fxcm_bar_GBPUSD ;
 
 
-
+# Other Offers not in Default
  drop database fxcm_bar_CHFNOK;
  drop database fxcm_bar_CHFSEK;    
  drop database fxcm_bar_EURCZK;    
@@ -72,7 +75,8 @@ drop database fxcm_bar_ZARJPY ;
  drop database fxcm_bar_EURPLN;    
  drop database fxcm_bar_GBPSEK;   
  drop database fxcm_bar_HKDJPY;    
- drop database fxcm_bar_ITA40  drop database fxcm_bar_CHFNOK;
+ drop database fxcm_bar_ITA40;
+ drop database fxcm_bar_CHFNOK;
  drop database fxcm_bar_CHFSEK;    
  drop database fxcm_bar_EURCZK;    
  drop database fxcm_bar_EURDKK;    
@@ -109,7 +113,3 @@ drop database fxcm_bar_ZARJPY ;
  drop database fxcm_bar_USDSGD;    
  drop database fxcm_bar_XPDUSD;    
  drop database fxcm_bar_XPTUSD; 
-
-
-drop database fxcm_bar_USDJPY ; 
-drop database fxcm_bar_GBPUSD ;
