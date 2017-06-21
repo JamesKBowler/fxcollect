@@ -44,7 +44,7 @@ Operating System:
  `$ sudo timedatectl set-timezone UTC`  
 
 8. To start the process just execute:  
- `$ python ~/fxcmminer/fxcmminer_v1.0/engine.py`  
+ `$ python ~/fxcmminer_v1.1/fxcmminer/engine.py`  
 
 ##### All FXCM data will take about 30 hours to download.
 
