@@ -1,0 +1,25 @@
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-02-28 17:01:00 2042-08-15 16:59:00 M1
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |M1|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-23 17:00:00 2023-01-20 16:59:00 W1
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |W1|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-23 17:01:00 2018-02-16 16:59:00 D1
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |D1|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-24 09:01:00 2017-08-23 05:00:00 H8
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |H8|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-24 09:01:00 2017-06-13 09:00:00 H4
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |H4|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-24 09:01:00 2017-05-19 09:00:00 H2
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |H2|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-24 11:01:00 2017-05-05 16:59:00 H1
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |H1|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-24 11:01:00 2017-04-30 17:00:00 m30
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |m30|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-28 11:01:00 2017-05-01 14:00:00 m15
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |m15|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[??] Skipping Block   : GBP/USD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |m5|
+DEBUG:root:[>>] Starting Block   : GBP/USD 2017-04-28 16:59:00 2017-04-28 16:59:00 m1
+DEBUG:root:[??] Skipping Block   : GBP/USD 2017-04-28 16:59:00 2017-04-28 16:59:00 m1
+DEBUG:root:[^^] TFrame Complete  : GBP/USD |m1|
+DEBUG:root:[<>] Offer Complete   : GBP/USD |m1|

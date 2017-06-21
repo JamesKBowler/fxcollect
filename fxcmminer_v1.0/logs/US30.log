@@ -1,0 +1,26 @@
+DEBUG:root:[>>] Starting Block   : US30 1991-10-31 17:01:00 2017-04-17 17:00:00 M1
+DEBUG:root:[??] Skipping Block   : US30 1991-10-31 17:01:00 2017-04-17 17:00:00 M1
+DEBUG:root:[^^] TFrame Complete  : US30 |M1|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-23 17:00:00 2023-01-20 16:59:00 W1
+DEBUG:root:[^^] TFrame Complete  : US30 |W1|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-23 17:01:00 2018-02-16 16:59:00 D1
+DEBUG:root:[^^] TFrame Complete  : US30 |D1|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-24 01:01:00 2017-08-22 21:00:00 H8
+DEBUG:root:[^^] TFrame Complete  : US30 |H8|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-24 05:01:00 2017-06-13 05:00:00 H4
+DEBUG:root:[^^] TFrame Complete  : US30 |H4|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-24 07:01:00 2017-05-19 07:00:00 H2
+DEBUG:root:[^^] TFrame Complete  : US30 |H2|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-24 08:01:00 2017-05-05 16:59:00 H1
+DEBUG:root:[^^] TFrame Complete  : US30 |H1|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-28 16:01:00 2017-05-04 22:00:00 m30
+DEBUG:root:[^^] TFrame Complete  : US30 |m30|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-28 16:01:00 2017-05-01 19:00:00 m15
+DEBUG:root:[^^] TFrame Complete  : US30 |m15|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-28 16:11:00 2017-04-28 16:59:00 m5
+DEBUG:root:[??] Skipping Block   : US30 2017-04-28 16:11:00 2017-04-28 16:59:00 m5
+DEBUG:root:[^^] TFrame Complete  : US30 |m5|
+DEBUG:root:[>>] Starting Block   : US30 2017-04-28 16:15:00 2017-04-28 16:59:00 m1
+DEBUG:root:[:)] Data Collected   : US30 2017-04-28 16:15:00 2017-04-28 16:59:00 m1
+DEBUG:root:[^^] TFrame Complete  : US30 |m1|
+DEBUG:root:[<>] Offer Complete   : US30 |m1|

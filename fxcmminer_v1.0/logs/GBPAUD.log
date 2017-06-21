@@ -1,0 +1,25 @@
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-02-28 17:01:00 2042-08-15 16:59:00 M1
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |M1|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-23 17:00:00 2023-01-20 16:59:00 W1
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |W1|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-23 17:01:00 2018-02-16 16:59:00 D1
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |D1|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-24 09:01:00 2017-08-23 05:00:00 H8
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |H8|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-24 09:01:00 2017-06-13 09:00:00 H4
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |H4|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-24 11:01:00 2017-05-19 11:00:00 H2
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |H2|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-24 12:01:00 2017-05-05 16:59:00 H1
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |H1|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-24 12:31:00 2017-04-30 18:30:00 m30
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |m30|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-27 16:31:00 2017-04-30 19:30:00 m15
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |m15|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[??] Skipping Block   : GBP/AUD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |m5|
+DEBUG:root:[>>] Starting Block   : GBP/AUD 2017-04-28 16:58:00 2017-04-28 16:59:00 m1
+DEBUG:root:[??] Skipping Block   : GBP/AUD 2017-04-28 16:58:00 2017-04-28 16:59:00 m1
+DEBUG:root:[^^] TFrame Complete  : GBP/AUD |m1|
+DEBUG:root:[<>] Offer Complete   : GBP/AUD |m1|

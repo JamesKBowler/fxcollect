@@ -1,0 +1,28 @@
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-02-28 17:01:00 2042-08-15 16:59:00 M1
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |M1|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-23 17:00:00 2023-01-20 16:59:00 W1
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |W1|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-23 17:01:00 2018-02-16 16:59:00 D1
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |D1|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-24 09:01:00 2017-08-23 05:00:00 H8
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |H8|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-24 09:01:00 2017-06-13 09:00:00 H4
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |H4|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-24 09:01:00 2017-05-19 09:00:00 H2
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |H2|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-24 09:01:00 2017-05-05 16:59:00 H1
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |H1|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-28 16:31:00 2017-05-04 22:30:00 m30
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |m30|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-28 16:46:00 2017-05-01 19:45:00 m15
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |m15|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[:)] Data Collected   : USD/ZAR 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |m5|
+DEBUG:root:[>>] Starting Block   : USD/ZAR 2017-04-28 16:59:00 2017-04-28 16:59:00 m1
+DEBUG:root:[??] Skipping Block   : USD/ZAR 2017-04-28 16:59:00 2017-04-28 16:59:00 m1
+DEBUG:root:[^^] TFrame Complete  : USD/ZAR |m1|
+DEBUG:root:[<>] Offer Complete   : USD/ZAR |m1|
+DEBUG:root:[XX] Database Error   : fxcm_bar_USDZAR.tbl_USDZAR_m5 | (1062, "Duplicate entry '2017-04-28 16:55:00' for key 'PRIMARY'")
+DEBUG:root:[XX] Database Error   : fxcm_bar_USDZAR.tbl_USDZAR_m1 | (1062, "Duplicate entry '2017-04-28 16:58:00' for key 'PRIMARY'")
+DEBUG:root:[XX] Database Error   : fxcm_bar_USDZAR.tbl_USDZAR_m5 | (1062, "Duplicate entry '2017-04-28 16:55:00' for key 'PRIMARY'")

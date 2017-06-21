@@ -1,0 +1,27 @@
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2007-01-01 00:01:00 2032-06-18 00:00:00 M1
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |M1|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-23 17:00:00 2023-01-20 16:59:00 W1
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |W1|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-23 17:01:00 2018-02-16 16:59:00 D1
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |D1|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-24 01:01:00 2017-08-22 21:00:00 H8
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |H8|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-24 05:01:00 2017-06-13 05:00:00 H4
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |H4|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-24 07:01:00 2017-05-19 07:00:00 H2
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |H2|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-24 08:01:00 2017-05-05 16:59:00 H1
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |H1|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-28 16:31:00 2017-05-04 22:30:00 m30
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |m30|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-28 16:46:00 2017-05-01 19:45:00 m15
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |m15|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[:)] Data Collected   : NZD/CAD 2017-04-28 16:56:00 2017-04-28 16:59:00 m5
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |m5|
+DEBUG:root:[>>] Starting Block   : NZD/CAD 2017-04-28 16:58:00 2017-04-28 16:59:00 m1
+DEBUG:root:[:)] Data Collected   : NZD/CAD 2017-04-28 16:58:00 2017-04-28 16:59:00 m1
+DEBUG:root:[^^] TFrame Complete  : NZD/CAD |m1|
+DEBUG:root:[<>] Offer Complete   : NZD/CAD |m1|
+DEBUG:root:[XX] Database Error   : fxcm_bar_NZDCAD.tbl_NZDCAD_m5 | (1062, "Duplicate entry '2017-04-28 16:55:00' for key 'PRIMARY'")
+DEBUG:root:[XX] Database Error   : fxcm_bar_NZDCAD.tbl_NZDCAD_m1 | (1062, "Duplicate entry '2017-04-28 16:57:00' for key 'PRIMARY'")
