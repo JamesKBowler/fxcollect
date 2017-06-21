@@ -52,51 +52,9 @@ If you need assistance setting this up or find any bugs, please report using the
 
 ### TODO:
 
-1. Prioritize queue so that lower time frame data is written to database before higher time frame.
+1. Improve logging
 
-2. Improve logging
-
-3. Add auto offer removal to the fxscout
-
-4. Clean up code!
-
-### Code Explanation
-
-#### Scout
-
-The process of collecting data is started by executing the engine.py script. This in turn will start the fxscout.py, who's primary job is to scout FXCM for currently tradable instruments (also know as 'offers'). Once the Scout has found 'offers' available, it will contact FXCM for the .xml catalogue and make a local copy to be accessed later by fxcmminer. If FXCM add another 'offer' the Scout will then make a new local copy of the catalogue. 
-
-The scout will continue checking FXCM for the entire duration whilst the program is running, and will only place an 'OFFER' event in the events queue on system startup or if a new 'offer' is added in the future.
-
-#### DatabaseManager
-
-If an 'OFFER' event is placed in the queue, the Engine class will pass the event over to the DatabaseManager located in db_manager.py. DatabaseManager will compare its local database with the offer. If the database already exists the creation is skipped, if not the corresponding database and tables for the following time frames will be created.
-
-  `{GBP/USD : ['M1','W1','D1','H8', 'H4', 'H2', 'H1','m30', 'm15', 'm5', 'm1']}`
-
-The schema is one database per offer as this will provide plenty of space for future expansion.
-
-#### HistoricalCollector 
-
-After a database check or creation has been carried out, a 'DBReady' event is placed into the queue, which is then passed over to the HistoricalCollector class located in historical.py .
-The HistoricalCollector asks the DatabaseManager for the lastest date in the database, if this is a new offer or first time system startup, the DatabaseManager will return a date from the .xml catalogue. If the catalog does not have a corresponding date an artificial low date of 2007-01-01 00:00:00 is returned.
-Now the HistoricalCollector has a starting point, it will begin to call FXCM's API and collect data. Once data is returned, a 'HISTDATA' event is created and placed in the queue, which in turn will be passed to the DatabaseManager and written to the database.
-After all historical data has been collected for the offer, a 'LIVEREADY' event is placed into the queue and the HistoricalCollector process will exit.
-
-#### TimeKeeper
-The apscheduler will fire off at market invertals such as 1 minute, 5 minutes etc. On each fire a 'GETLIVE' event is placed into the queue.
-
-#### LiveDataMiner 
-
-On receipt of the 'LIVEREADY' event, LiveDataMiner located in live.py, will update its current list of 'LIVEREADY' offers, and is now waiting for a 'GETLIVE' event from TimeKeeper. On receipt of an 'GETLIVE' event, LiveDataMiner will loop through the list of live ready offers for the corrsponding 'GETLIVE' event time_frame. Once data is collected a 'LIVEDATA' event is placed into the queue for the processing by the DatabaseManager and written to the database.
-
-#### Other classes 
-
-TimeDelta will provide a range in minutes for each time frame, that will not exceed to 300 bars (data points). This is because the maximum bars return for any one API call to FXCM is 300.
-Using the information from TimeDelta, DateRange will provide a date block which is used when calling the API. At the moment this is the only way I could exclude calling for data at the weekends whilst FXCM is closed, and due to the nature of the foreign exchange, holidays are not equal in all countries.
-
-#### Queues
-There are two queues one for historical data and one for live data.
+2. Add auto offer removal to the fxscout
 
 # License Terms  
 
