@@ -19,7 +19,7 @@ class LiveCollector(AbstractFxcmLive):
         self.live_queue = live_queue
         self.date_range = DateRange()
         self.get_live_range = DateTimeManagement().get_live_range
-    
+
     def _collect_data(self, fxc, instrument, time_frame, last_dbdate):
         """
         Iterates through the DatetimeIndex provided provided by the
@@ -49,7 +49,7 @@ class LiveCollector(AbstractFxcmLive):
         """
         fxc = self._fx_connection()
         for instrument in instruments:
-            last_dbdate = self._get_init_date(instrument, time_frame)      
+            last_dbdate = self._get_init_date(instrument, time_frame)
             self._collect_data(fxc, instrument, time_frame, last_dbdate)
         fxc.logout()
 
