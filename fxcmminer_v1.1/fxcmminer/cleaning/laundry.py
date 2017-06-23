@@ -8,7 +8,7 @@ class DataCleaner(object):
         """
         """
         self.events_queue = events_queue
-        
+
     def _remove_duplicates(self, data):
         """
         Drop any duplicates in the Datetime Index
@@ -34,7 +34,7 @@ class DataCleaner(object):
         data = data.loc[data[ac] >= data[al]]
         data = data.loc[data[ao] <= data[ah]]
         data = data.loc[data[ao] >= data[al]]
-        data = data.loc[data[ah] >= data[al]]    
+        data = data.loc[data[ah] >= data[al]]
         data = data.loc[data[bc] <= data[bh]]
         data = data.loc[data[bc] >= data[bl]]
         data = data.loc[data[bo] <= data[bh]]
@@ -42,7 +42,7 @@ class DataCleaner(object):
         data = data.loc[data[bh] >= data[bl]]
         data = data.loc[data[v] >= 0]
         return data
-    
+
     def clean_data(self, event):
         data = self._remove_not_a_number(event.data)
         data = self._remove_incorrect_values(data)
