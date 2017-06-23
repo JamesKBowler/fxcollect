@@ -29,9 +29,14 @@ class AbstractFxcm(object):
         Calls FXCM for a given offer and time frame, collects data then
         return a Pandas pd.DataFrame.
         """
-        values = fxc.get_historical_prices(
-            str(instrument), fm_date, to_date, str(time_frame))
-        data = [v.__getstate__()[0] for v in values]
+        try:
+            values = fxc.get_historical_prices(
+                str(instrument), fm_date, to_date, str(time_frame))
+            data = [v.__getstate__()[0] for v in values]
+        except RuntimeError as e:
+            data = []
+            print(instrument, fm_date, to_date, time_frame)
+            print(e)
         try:
             return pd.DataFrame.from_records(data, index = "date").round(6)
         except KeyError:
