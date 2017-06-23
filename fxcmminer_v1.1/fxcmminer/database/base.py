@@ -107,7 +107,7 @@ class DatabaseManager(object):
                                       str(data.index.max())))
         db_dates = cur.fetchall()
         db_date_list = []
-        if not db_dates:
+        if len(db_dates) != 0:
             for (date_,) in db_dates:
                 db_date_list.append(date_)
             for db_date in db_date_list:
