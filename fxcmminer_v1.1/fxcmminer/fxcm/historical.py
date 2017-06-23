@@ -49,7 +49,7 @@ class HistoricalCollector(AbstractFxcmHistorical):
                 self.hist_queue.put(HistDataEvent(
                     data, instrument, time_frame))
             del data
-    
+
     def _sort_fxoffers(self, fxoffers):
         """
         The list of fxoffers is sorted by date, so that
@@ -75,7 +75,7 @@ class HistoricalCollector(AbstractFxcmHistorical):
                 instrument = ins[0]
                 print("[^^] HIST  | Starting : %s %s" % (
                     instrument, time_frame))
-                init_date = self._get_init_date(instrument, time_frame)        
+                init_date = self._get_init_date(instrument, time_frame)
                 self._collect_data(
                     fxc, instrument, time_frame, init_date)
                 print("[^^] HIST  | Complete : %s %s" % (
