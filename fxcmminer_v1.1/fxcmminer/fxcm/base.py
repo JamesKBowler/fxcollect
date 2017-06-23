@@ -5,7 +5,6 @@ import forexconnect as fx
 from settings import FX_USER, FX_PASS, FX_ENVR, URL, PICKLE
 import pandas as pd
 import pickle
-
 pd.set_option('expand_frame_repr', False)
 
 class AbstractFxcm(object):
