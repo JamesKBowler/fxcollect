@@ -24,7 +24,7 @@ class HistEngine(object):
             try:
                 event = hist_queue.get(False)
             except queue.Empty:
-                sleep(0.01)            
+                sleep(0.01)
             else:
                 if event.type == 'HISTDATA':
                     mp.Process(
@@ -77,7 +77,7 @@ class LiveEngine(object):
                     target=live_miner.live_prices, 
                     args=(offers, event.time_frame,)).start()
                 offers = []
-             
+
     def _live(
         self, live_queue, live_miner, data_cleaner,
         database_manager
