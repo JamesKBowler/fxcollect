@@ -20,7 +20,7 @@ class DatabaseManager(object):
 
     def _name_conversion(self, instrument, time_frame):
         """
-        Converts any instrument names feed into the database manager.
+        Converts any instrument names into the database manager.
         Example: 
             'GBP/USD' | 'm1' becomes 'fxcm_bar_GBPUSD.tbl_GBPUSD_m1'
         """
@@ -68,7 +68,6 @@ class DatabaseManager(object):
         db, cur = self._datebase_cursor()
         db_bar = 'fxcm_bar_%s' % (re.sub('[^A-Za-z0-9]+','',offer))
         cur.execute("CREATE DATABASE IF NOT EXISTS %s;" % (db_bar))
-        #log(offer).debug("[!!] Database Created : %s" % db_bar)
         for time_frame in time_frames:
             tb_bar = 'tbl_%s_%s' % (
                 re.sub('[^A-Za-z0-9]+','',offer), time_frame)                                              
@@ -84,9 +83,7 @@ class DatabaseManager(object):
                          `askclose` DECIMAL(19,6) NULL, \
                          `volume` BIGINT NULL, \
                         PRIMARY KEY (`date`)) \
-                        ENGINE=InnoDB;" % (db_bar, tb_bar))                
-                #log(offer).debug("[!!] Table Created    : %s" % tb_bar)
-        
+                        ENGINE=InnoDB;" % (db_bar, tb_bar))
         cur.close()
         db.close()
 
@@ -113,6 +110,8 @@ class DatabaseManager(object):
             for db_date in db_date_list:
                 if db_date in data.index:
                     data = data[data.index != db_date]
+        cur.close()
+        db.close()
         return data
 
     def write_to_db(self, event):
@@ -147,5 +146,3 @@ class DatabaseManager(object):
                     db_name, tb_name, e))
                 print("[XX] Database Error   : From : %s To : %s" % (
                     data.index.min(), data.index.max()))
-
-
