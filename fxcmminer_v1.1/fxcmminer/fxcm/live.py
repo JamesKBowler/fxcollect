@@ -55,7 +55,6 @@ class LiveCollector(AbstractFxcmLive):
 
     def live_prices(self, offer, time_frame):
         """
-        Contacts the database and retrives the latest date, then continues
-        with the live data mining to the present date
+        Starts the collection of periodic live data
         """
         self._live_iter(offer, time_frame)
