@@ -7,6 +7,9 @@ import xml.etree.ElementTree as ET
 
 class XMLCatalogue(object):
     """
+    The XMLCatalogue class is resposiable for reading the FXCM xml catalogue.
+    Once the catalogue has been downloaded, the information is extracted
+    and converted into a Python dictionary.
     """
     def _update_catalog_xml(self):
         """
@@ -40,8 +43,7 @@ class XMLCatalogue(object):
         return dict(catalog)
 
     def start_parser(self, stream):
-        """
-        """
+        """ Kicks off the process and returns the calalogue """
         self._update_catalog_xml()
         catalog = self._xml_to_dict(stream)
         return catalog
