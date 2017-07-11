@@ -85,7 +85,6 @@ class HistoricalCollector(AbstractFxcmHistorical):
 
     def historical_prices(self, event):
         """
-        Contacts the database and retrives the latest date, then
-        continues with the historical data mining to the present date
+        Starts the collection of historical data
         """
         self._historical_iter(event.fxoffers, event.time_frames)
