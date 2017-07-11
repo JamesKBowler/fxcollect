@@ -93,7 +93,7 @@ class DatabaseManager(object):
         the database. First a call is made to the database that matches
         the dateframe date range. Then each date in the DataFrame index
         is checked against the data base date range. Any postive matches
-        are dropped fromt the DataFrame.
+        are dropped from the DataFrame.
         """
         db, cur = self._datebase_cursor()
         cur.execute("SELECT date \
