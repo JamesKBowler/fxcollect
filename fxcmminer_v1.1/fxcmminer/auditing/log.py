@@ -5,6 +5,9 @@ import re
 
 class Logger(object):
     def __init__(self, filename):
+        """
+        This is shit, need to do better logging.
+        """
         
         fn = '%s/%s.log' % (LOG_DIR, re.sub('[^A-Za-z0-9]+','',filename))
         
