@@ -6,9 +6,17 @@ from .base import DateTimeManagement
 
 class DateRange(DateTimeManagement):
     """
+    The DataRange class provide a mechanism for interacting with
+    multiple time frames. If a timestamp is provided to this class
+    the corasponing trading week is returned in multiples of 300.
+    300 is the maxumum bars that can be called from FXCM in any
+    one API call. A daterange is returned as a DatetimeIndex
+    which is then iterated over.
     """
     def get_trading_range(self, init_date, time_frame):
         """
+        Selects the correct methood based on time frame
+        recieved.
         """
         tr_dict = {
             'D' : lambda : self._daily_range(init_date),
@@ -21,6 +29,8 @@ class DateRange(DateTimeManagement):
 
     def get_next_trading_range(self, init_date, time_frame):
         """
+        Once the DatetimeIndex has been completely covered, this
+        method will turn the next trading week.
         """
         utcnow = datetime.utcnow()
         if init_date < utcnow:
