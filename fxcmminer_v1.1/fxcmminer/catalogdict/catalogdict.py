@@ -4,10 +4,15 @@ from datetime import datetime, timedelta
 
 class InstrumentDictCatalog(object):
     """
+    The InstrumentDictCatalog provides an interface for extracing
+    instrument attributes from a python dictionary created by
+    the XMLCatalogue class.
     """
     def date_extract(self, offer, time_frame, catalog):
         """
-        Reads the xmloffers and returns a start date.
+        Each instrument at FXCM has a documented starting point,
+        this method will extract a starting date for the historical
+        data collection process.
         """
         for k, v in catalog[offer]['time-frames'].iteritems():
             if k[:1] == time_frame[:1]:
@@ -26,7 +31,12 @@ class InstrumentDictCatalog(object):
 
     def _correct_xml_date(self, cat_date, time_frame):
         """
-        Corrects time zone and starting point.
+        The dates within the xml catalogue are EST and in order
+        provide the data collection process with a correct starting
+        point, the times are converted to UTC and the day according
+        to the time frame. For instance, weekly data is collected
+        every Saturday, Monthly on the last day of each month
+        and all other time frames start on Sunday.
         """
         # Time Zones
         from_zone = tz.gettz('America/New_York')
