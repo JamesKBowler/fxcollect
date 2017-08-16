@@ -39,31 +39,26 @@ class DateTimeManagement(object):
             hour -= 1
         return hour
 
-    def _forex_trading_hours(self, init_date, fx_open_hour):
+    def get_trading_week(self, init_date):
         """
         Creates the corrasponding forex trading week.
         Forex Opening Hours are:
         Sunday 21:00 - Friday 20:59 (UTC)
         """
-        tws = init_date - timedelta(
+        trading_week_start = init_date - timedelta(
             7+((init_date.weekday() + 1) % 7)-(7))
-        trading_week_start = tws.replace(
-            hour=fx_open_hour, minute=00)
-        trading_week_end = trading_week_start + timedelta(days=5) 
-        trading_week_end -= timedelta(minutes=1)
+        trading_week_end = trading_week_start + timedelta(days=5)
         if init_date >= trading_week_end:
             trading_week_start += timedelta(days=7)
             trading_week_end += timedelta(days=7)
+        fx_open_hour = self.new_york_offset(init_date, 22)  <<<<<< correct place to adjust hour
+        trading_week_start = trading_week_start.replace(
+            hour=fx_open_hour, minute=00)
+        trading_week_end = trading_week_end.replace(
+            hour=fx_open_hour, minute=59)
         return trading_week_start, trading_week_end
 
-    def get_trading_week(self, init_date):
-        fx_open_hour = self.new_york_offset(init_date, 22)
-        tr_wk_str, tr_wk_end = self._forex_trading_hours(
-                                    init_date, fx_open_hour)
-        return tr_wk_str, tr_wk_end
-    
     def get_live_range(self, to_date, time_frame):
         freq, interval_type, delta = self._data_frequency(time_frame)
         to_date += timedelta(**{interval_type:delta})
         return to_date
-
