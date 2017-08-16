@@ -51,7 +51,7 @@ class DateTimeManagement(object):
         if init_date >= trading_week_end:
             trading_week_start += timedelta(days=7)
             trading_week_end += timedelta(days=7)
-        fx_open_hour = self.new_york_offset(init_date, 21)
+        fx_open_hour = self.new_york_offset(init_date, 22)
         trading_week_start = trading_week_start.replace(
             hour=fx_open_hour, minute=00)
         trading_week_end = trading_week_end.replace(
