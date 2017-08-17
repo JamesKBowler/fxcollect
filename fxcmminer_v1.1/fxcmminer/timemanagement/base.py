@@ -55,7 +55,7 @@ class DateTimeManagement(object):
         trading_week_start = trading_week_start.replace(
             hour=fx_open_hour, minute=00)
         trading_week_end = trading_week_end.replace(
-            hour=fx_open_hour, minute=59)
+            hour=fx_open_hour-1, minute=59)
         return trading_week_start, trading_week_end
 
     def get_live_range(self, to_date, time_frame):
