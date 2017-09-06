@@ -60,5 +60,5 @@ class DateTimeManagement(object):
 
     def get_live_range(self, to_date, time_frame):
         freq, interval_type, delta = self._data_frequency(time_frame)
-        to_date += timedelta(**{interval_type:delta})
+        to_date -= timedelta(**{interval_type:delta})
         return to_date
