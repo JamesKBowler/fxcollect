@@ -14,11 +14,11 @@ class FXCMBrokerHandler(object):
     """
     def __init__(self):
         self.broker = 'fxcm'
-        #self.supported_time_frames = [
-        #    'm1', 'm5', 'm15', 'm30',
-        #    'H1', 'H2', 'H4', 'H8',
-        #    'D1'
-        #]
+        # self.supported_time_frames = [
+        #     'm1', 'm5', 'm15', 'm30',
+        #     'H1', 'H2', 'H4', 'H8',
+        #     'D1'
+        # ]
         self.supported_time_frames = [
             'D1',
             'H8', 'H4', 'H2', 'H1',
@@ -37,7 +37,7 @@ class FXCMBrokerHandler(object):
 
     def _session_status(self):
         if self.session.is_connected():
-            return True
+        return True
         else: return False
 
     def _login(self):
@@ -55,7 +55,7 @@ class FXCMBrokerHandler(object):
             except RuntimeError: time.sleep(1)
         if not self.session.is_connected():
             raise Exception('Unable to login')
-            
+
     def _get_instruments(self):
         return self.session.get_offers()
 
@@ -66,7 +66,6 @@ class FXCMBrokerHandler(object):
         d = {}
         d1 = self.session.get_market_status()
         d2 = self.session.get_time()
-        ds = [d1,d2]
         for k in d1.keys():
             d[k] = (d1[k], ole(d2[k]))
         if offer is not None:
@@ -81,12 +80,11 @@ class FXCMBrokerHandler(object):
             'D1'
         )[0].date
 
-    def _get_bars(self, offer, time_frame, dtfm, dtto):
+    def _get_bars(
+        self, offer, time_frame, dtfm, dtto
+    ):
         fxdata =  self.session.get_historical_prices(
-            offer,
-            dtfm,
-            dtto,
-            time_frame
+            offer, dtfm, dtto, time_frame
         )
         npvalues = self._numpy_convert(fxdata)
         return self._integrity_check(npvalues)
