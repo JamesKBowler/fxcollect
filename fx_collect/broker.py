@@ -64,11 +64,11 @@ class FXCMBrokerHandler(object):
             OLE_TIME_ZERO = datetime(1899, 12, 30, 0, 0, 0)
             return OLE_TIME_ZERO + timedelta(days=float(o))
         d = {}
-        d1 = self.session.get_offers()
-        d2 = self.session.get_offers()
+        d1 = self.session.get_market_status()
+        d2 = self.session.get_time()
         ds = [d1,d2]
         for k in d1.keys():
-            d[k] = tuple(ole(d[k]) for d in ds)
+            d[k] = (d1[k], ole(d2[k]))
         if offer is not None:
             return d[offer]
         else: return d
