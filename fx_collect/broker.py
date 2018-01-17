@@ -2,7 +2,6 @@ from settings import FX_USER, FX_PASS, URL, FX_ENVR
 from datetime import datetime, timedelta
 
 import forexconnect as fx
-import queue
 import numpy as np
 import time
 
