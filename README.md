@@ -48,8 +48,8 @@ Specification:
 If you need assistance setting this up or find any bugs, please report using the Issue section.
 
 ### TODO:
-1. Improve logging
-2. Add auto offer removal to the fxscout
+1. Add logging
+2. Make faster!
 
 # License Terms  
 
