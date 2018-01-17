@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 
 class Instrument(object):
     def __init__(
-        self, broker, instrument, time_frame, market_status, last_update, dt
+        self, broker, instrument, time_frame,
+        market_status, last_update, dt
     ):
         trading_wk_str = dt - timedelta(days=dt.weekday()+1)
         self.sw_hour = trading_wk_str.hour
@@ -16,7 +17,9 @@ class Instrument(object):
         self.db_max = None
         self.fin_bar = None
 
-    def update(self, lastupdate, market_status):
+    def update(
+        self, lastupdate, market_status
+    ):
         self.last_update = lastupdate
         self.market_status = market_status
       
