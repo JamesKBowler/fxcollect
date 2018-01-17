@@ -1,0 +1,12 @@
+datetime
+MySQLdb
+re
+bs4
+forexconnect
+multiprocessing
+Queue
+time
+logging
+collections
+urllib2
+apscheduler
