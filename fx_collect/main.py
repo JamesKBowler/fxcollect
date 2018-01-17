@@ -28,8 +28,8 @@ class MainAggregator(object):
     def _check_subscriptions(self, instruments):
         # There are lots of offers to track at FXCM.
         # Its best to only track what you intend to trade.
-        # Lots of connections will cause login timeouts and 
-        # high RAM useage : ( 
+        # Lots of connections will cause login timeouts and
+        # high RAM useage : (
         # Some defaults below have been set.
         instruments = ['EUR/USD', 'USD/JPY', 'GBP/USD',
                        'AUD/USD', 'USD/CHF', 'NZD/USD'
@@ -42,7 +42,7 @@ class MainAggregator(object):
                     ['python3', 'collection.py', broker, instrument]
                 )
                 self.subscriptions[i] = s
-                time.sleep(5) # Watch out for login timeouts
+                time.sleep(5)  # Watch out for login timeouts
 
     def _subscriptions_manager(self):
         try:
@@ -56,7 +56,7 @@ class MainAggregator(object):
                 time.sleep(60)
         except KeyboardInterrupt:
             self._kill()
-            
+
     def _kill(self):
         print('Kill Command sent to all SubProcesses')
         for s in self.subscriptions:
