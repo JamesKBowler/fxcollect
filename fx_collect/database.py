@@ -8,8 +8,8 @@ import re
 class DatabaseHandler(object):
     def __init__(self, broker):
         """
-        The DatabaseManager provides an interface for interacting with the
-        MariaDB database.
+        The DatabaseManager provides an interface for interacting
+        with the MariaDB database.
         """
         self.broker = broker
 
@@ -52,15 +52,17 @@ class DatabaseHandler(object):
                           FROM %s.%s \
                           WHERE `date`=(SELECT MIN(`date`) \
                          FROM %s.%s);" % (
-                db_name, tb_name, db_name, tb_name
-            ))
+                    db_name, tb_name, db_name, tb_name
+                )
+            )
             db_min = cur.fetchone()[0]
             cur.execute("SELECT `date` \
                           FROM %s.%s \
                           WHERE `date`=(SELECT MAX(`date`) \
                          FROM %s.%s);" % (
-                db_name, tb_name, db_name, tb_name
-            ))
+                    db_name, tb_name, db_name, tb_name
+                )
+            )
             db_max = cur.fetchone()[0]
             return db_min, db_max
         except TypeError: return False
@@ -141,20 +143,16 @@ class DatabaseHandler(object):
                   askopen, askhigh, asklow, askclose, volume
                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
         sql = insert + stmt
-        #print(
-        #    "Database Write    : %s, %s, %s, %s" % (
-        #        instrument, time_frame,
-        #        data['date'].min().item(), data['date'].max().item())
-        #)
         try:
             cur.executemany(sql, data.tolist())
             db.commit()
         except pymysql.err.IntegrityError as e:
             print("[XX] Database Error   : %s.%s | %s" % (
                 db_name, tb_name, e))
-            print("[XX] Database Error   : From : %s To : %s" % (
-                data[-1][0], data[0][0]))
+            print("[XX] Database Error   : %s, %s, %s, %s" % (
+                instrument, time_frame,
+                data['date'].min().item(), data['date'].max().item())
+            )
         finally:
             cur.close()
             db.close()
-        
