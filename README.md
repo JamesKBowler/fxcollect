@@ -13,7 +13,7 @@ Specification:
  Operating System:  
  Ubuntu Server 16.04 (without GUI) for testing, however this will run on most Linux OS with/without GUI.  
  
- 1. First install all dependencies in the requiements.txt and Python 2.7
+ 1. First install all dependencies in the requiements.txt and Python 3.x
  
  2. Install MariaDB 10.x  
    https://mariadb.org/download/
@@ -34,17 +34,15 @@ Specification:
   https://github.com/JamesKBowler/python-forexconnect  
  
  5. Download this repository and place in a convenient location
- 
- 6. Create a logs folder in the root directory  
-  `$ mkdir ~/fxcmminer_1.1/logs/live.log`  
   
- 7. Set the system time zone to UTC, this is important as all data on FXCM servers are stored in UTC time zone.  
+ 6. Set the system time zone to UTC, this is important as all data on FXCM servers are stored in UTC time zone.  
   `$ sudo timedatectl set-timezone UTC`  
  
- 8. To start the process just execute:  
-  `$ python ~/fxcmminer_v1.1/fxcmminer/engine.py`  
+ 7. To start the process just execute:  
+  `$ python3 ~/fxcmminer/fx_collect/main.py`  
  
 ##### All FXCM data will take about 30 hours to download.
+
 If you need assistance setting this up or find any bugs, please report using the Issue section.
 
 ### TODO:
