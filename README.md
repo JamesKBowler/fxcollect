@@ -13,13 +13,13 @@ Specification:
  59 instruments = 41GB as of 29/04/2017
  
  1. Install dependencies
-  - numpy
-  - pymysql
+  - numpy  
+  - pymysql  
  
  2. Install MariaDB 10.x  
    https://mariadb.org/download/
  
- 3. Setup MariaDB to allow the user 'sec_master' to access the database with read and write permissions.
+ 3. Setup MariaDB to allow the user 'sec_master' to access the database with read and write permissions.  
  
     `$ mysql -u root -p`  
   
@@ -34,25 +34,25 @@ Specification:
  4. Download forexconnect and follow instructions.  
      https://github.com/JamesKBowler/python-forexconnect  
  
- 5. Download this repository
-  `$ git clone https://github.com/JamesKBowler/fxcmminer ~/`
+ 5. Download this repository  
+  `$ git clone https://github.com/JamesKBowler/fxcmminer ~/`  
  
- ##### FXCM price data stored in UTC time zone.
- 6. Set the system time zone to UTC
-  `$ sudo timedatectl set-timezone UTC`
+ ##### FXCM price data stored in UTC time zone.  
+ 6. Set the system time zone to UTC  
+  `$ sudo timedatectl set-timezone UTC`  
  
  7. Execute:  
-  `$ mkdir fx_collect`
-  `$ cd fx_collect`
-  `$ python3 ~/fxcmminer/fx_collect/main.py`
+  `$ mkdir fx_collect`  
+  `$ cd fx_collect`  
+  `$ python3 ~/fxcmminer/fx_collect/main.py`  
  
-##### All FXCM data will take about 30 hours to download.
+##### All FXCM data will take about 30 hours to download.  
 
-If you need assistance setting this up or find any bugs, please report using the Issue section.
+If you need assistance setting this up or find any bugs, please report using the Issue section.  
 
-### TODO:
-1. Update C++ code
-2. Update documentation
+### TODO:  
+1. Update C++ code  
+2. Update documentation  
 
 # License Terms  
 
