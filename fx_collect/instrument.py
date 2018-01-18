@@ -30,21 +30,33 @@ class Instrument(object):
         unfinished bars being written to the database.
         """
         lu = self.last_update.replace(second=0,microsecond=0)
-        t = int(self.time_frame[1:])
-
-        if self.time_frame[:1] == "m" or self.time_frame[:1] == "H":
-            variable_selection = {
-                'm':[lu, 1*t, lu.minute, 'minutes'],
-                'H':[lu.replace(minute=0), 1*t, lu.hour, 'hours']}
-            d = variable_selection[self.time_frame[:1]]
-            init_bar, delta, res, interval_type = d[0],d[1],d[2],d[3]
-            m = ( res // delta + 0) * delta
-            finished_bar = (
-                init_bar + timedelta(**{interval_type:(m-res)-t})
-            ) - timedelta(hours=self.td)
-
-        elif self.time_frame[:1] == "D":
-            init_bar = lu.replace(hour=self.sw_hour, minute=0)
-            finished_bar = init_bar - timedelta(days=t)
+        tf = int(self.time_frame[1:])
         
-        self.fin_bar = finished_bar
+        # New Your Offset
+        if self.td % 2 == 0: nyo = 1
+        else: nyo = 2
+          
+        if self.time_frame[:1] == "m":  # Minute
+            ub = lu
+            l = list(range(0,60,tf))
+            cm = min(l, key=lambda x:abs(x-ub.minute))
+            fin = ub.replace(minute=cm)-timedelta(minutes=tf)
+            
+        elif self.time_frame[:1] == "H":  # Hour
+            ub = lu.replace(minute=0)
+            h = ub.hour
+            l = [e-nyo for e in [i + tf - 2 for i in list(range(1,25,tf))]]
+            ch = min(l, key=lambda x:abs(x-h))
+            fin = ub.replace(hour=ch)-timedelta(hours=tf)            
+
+        elif self.time_frame[:1] == "D":  # Day
+            init_bar = lu.replace(hour=self.sw_hour,minute=0)
+            fin = init_bar - timedelta(days=tf)
+            
+        elif self.time_frame[:1] == "M":  # Month
+            init_bar = lu.replace(day=1,hour=self.sw_hour,minute=0)
+            fin = init_bar - timedelta(days=1)
+        else:
+            raise NotImplmented("Time-frame : %s Not Supported" % self.time_frame)
+            
+        self.fin_bar = fin
