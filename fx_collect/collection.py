@@ -8,9 +8,7 @@ import sys
 
 
 class CollectionHandler(object):
-    def __init__(
-        self, broker, instrument
-    ):
+    def __init__(self, broker, instrument):
         self.br_handler = FXCMBrokerHandler()
         self.db_handler = DatabaseHandler('fxcm')
         self.time_frames = self.br_handler.supported_time_frames
@@ -19,7 +17,7 @@ class CollectionHandler(object):
             self._initialise_instrument(
                 broker, instrument, time_frame
             )
-
+      
     def _initialise_instrument(
         self, broker, instrument, time_frame
     ):
@@ -38,29 +36,61 @@ class CollectionHandler(object):
         xtrdates = self.db_handler.return_extremity_dates(
             instrument, time_frame)
         # Store database minimum and maximum datetime information
-        if not xtrdates: # Is new instrument 
+        if not xtrdates: # Is a new in 
             i.db_min = i.fin_bar
             i.db_max = datetime(1899, 12, 30, 0, 0, 0)
-        else: 
+        else:
             i.db_min = xtrdates[0] - timedelta(minutes=1)
             i.db_max = xtrdates[1]
-        # Set first job history collection dates
+        # Set first history collection dates
         from_date = datetime(1899, 12, 30, 0, 0, 0)
         to_date = i.db_min
         # Add instrument to python dictionary
         self.instrument = i
         self.tracked[time_frame] = i
         # Create first collecton job.
+        print(
+            "INIT    : i: %s tf: %s min: %s max: %s" % (
+                instrument, time_frame, i.db_min, i.db_max)
+        )
+      
         self._data_collection(
             instrument, time_frame, from_date, to_date)
         print(
-            "Data Stored       : %s %s %s %s" % (
+            "DONE    : i: %s tf: %s min: %s max: %s" % (
                 instrument, time_frame, i.db_min, i.db_max)
         )
+      
+    def _status_monitoring(self):
+        while True:
+            update = self.br_handler._get_status()
+            for tf in self.tracked:
+                i = self.tracked[tf]
+                lastupdate = update[i.instrument][0]
+                market_status = update[i.instrument][1]
+                i.update(lastupdate, market_status)
+                i.market_status = 'Open'
+                if i.market_status == 'Open':
+                    # Find the last finished bar published by the broker
+                    i.calculate_finished_bar()
+                    if i.fin_bar > i.db_max:
+                        print(
+                            'SIGNAL  : i: %s tf: %s fb: %s dbm: %s' % (
+                                i.instrument, i.time_frame, i.fin_bar,i.db_max)
+                        )
+                        from_date = i.db_max + timedelta(minutes=1)
+                        to_date = i.fin_bar + timedelta(minutes=1)
+                        self._data_collection(
+                            i.instrument, i.time_frame, from_date, to_date)
+            time.sleep(1)
 
     def _data_collection(
         self, instrument, time_frame, dtfm, dtto
     ):
+        print(
+            "GET     : i: %s tf: %s fm: %s to: %s" % (
+                instrument, time_frame, dtfm, dtto)
+        )
         data = 'foobars'
         i = self.tracked[time_frame]
         while len(data) > 1:
@@ -74,29 +104,11 @@ class CollectionHandler(object):
                 if pd_max >= i.db_max: i.db_max = pd_max
                 self.db_handler.write(
                     instrument, time_frame, data)
+                print(
+                    "DATA    : i: %s tf: %s fm: %s to: %s" % (
+                        i.instrument, i.time_frame, pd_min, pd_max)
+                )
                 if pd_min == dtfm: break
 
-    def _status_monitoring(self):
-        while True:
-            market_status, lastupdate = self.br_handler._get_status(
-                i.instrument)
-            for tf in self.tracked:
-                i = self.tracked[tf]
-                i.update(lastupdate, market_status)
-                i.market_status = 'Open'
-                if i.market_status == 'Open':
-                    # Find the last finished bar published by the broker
-                    i.calculate_finished_bar()
-                    if i.fin_bar > i.db_max:
-                        from_date = i.db_max + timedelta(minutes=1)
-                        to_date = i.fin_bar + timedelta(minutes=1)
-                        print(
-                            "Status Collection : %s %s %s %s" % (
-                                i.instrument, i.time_frame, from_date, to_date)
-                        )
-                        self._data_collection(
-                            i.instrument, i.time_frame, from_date, to_date)
-            time.sleep(1)
-
 broker, instrument = sys.argv[1], sys.argv[2]
-ch = CollectionHandler(broker, instrument)._status_monitoring()
+ih = CollectionHandler(broker, instrument)._status_monitoring()
