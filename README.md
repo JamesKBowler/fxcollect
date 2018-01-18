@@ -48,8 +48,8 @@ Specification:
 If you need assistance setting this up or find any bugs, please report using the Issue section.
 
 ### TODO:
-1. Add logging
-2. Make faster!
+1. Update C++ code
+2. Update documentation
 
 # License Terms  
 
