@@ -31,15 +31,19 @@ Specification:
     `$ sudo service mysql restart`  
  
  4. Download forexconnect and follow instructions.  
-  https://github.com/JamesKBowler/python-forexconnect  
+     https://github.com/JamesKBowler/python-forexconnect  
  
- 5. Download this repository and place in a convenient location
-  
- 6. Set the system time zone to UTC, this is important as all data on FXCM servers are stored in UTC time zone.  
-  `$ sudo timedatectl set-timezone UTC`  
+ 5. Download this repository
+  `$ git clone https://github.com/JamesKBowler/fxcmminer ~/`
  
- 7. To start the process just execute:  
-  `$ python3 ~/fxcmminer/fx_collect/main.py`  
+ ##### FXCM price data stored in UTC time zone.
+ 6. Set the system time zone to UTC
+  `$ sudo timedatectl set-timezone UTC`
+ 
+ 7. Execute:  
+  `$ mkdir fx_collect`
+  `$ cd fx_collect`
+  `$ python3 ~/fxcmminer/fx_collect/main.py`
  
 ##### All FXCM data will take about 30 hours to download.
 
