@@ -1,19 +1,20 @@
 # fxcmminer 
 (renaming to fx_collect)
 
-The purpose of this software is to fully automate the simultaneous collection of historical and live financial data from FXCM, then store these data in a database ready for backtesting or live execution.
+The purpose of 'fxcmminer' is to automate the collection of historical and live financial time serais data from FXCM, then store these data in a MariaDB database ready for backtesting or live execution.
+
 ### Setup
-The development has been carried out on an ESXi server, however this will run on any hypervisor and most hardware.
-Specification:  
+Specification: 
+ - Ubuntu Server 16.04
+ - Python 3.x
  - 2x CPUs  
  - 2GB RAM  
  - 100GB SSD/HDD (for testing hard drive is fine)
- Total drive usage for the database (excluding OS etc) from 59 instruments, is 41GB as of 29/04/2017
+ 59 instruments = 41GB as of 29/04/2017
  
- Operating System:  
- Ubuntu Server 16.04 (without GUI) for testing, however this will run on most Linux OS with/without GUI.  
- 
- 1. First install all dependencies in the requiements.txt and Python 3.x
+ 1. Install dependencies
+  - numpy
+  - pymysql
  
  2. Install MariaDB 10.x  
    https://mariadb.org/download/
