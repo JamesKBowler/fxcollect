@@ -69,8 +69,7 @@ class CollectionHandler(object):
                 lastupdate = update[i.instrument][0]
                 market_status = update[i.instrument][1]
                 i.update(lastupdate, market_status)
-                i.market_status = 'Open'
-                if i.market_status == 'Open':
+                if i.market_status == 'O':  # Open
                     # Find the last finished bar published by the broker
                     i.calculate_finished_bar()
                     if i.fin_bar > i.db_max:
