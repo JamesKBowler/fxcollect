@@ -16,13 +16,12 @@ class InstrumentAttributes(object):
         self.time_frames = time_frames
         # Time frame storage dict
         self.attrib = {}
-        
-    def _add_time_frame(self, time_frame):
-        self.attrib[time_frame] = {
-                    'db_min' : None,
-                    'db_max' : None,
-                    'finbar' : None
-                }
+        for time_frame in time_frames:
+            self.attrib[time_frame] = {
+              'db_min' : None,
+              'db_max' : None,
+              'finbar' : None
+            }
 
     def update_instrument_status(
         self, lastupdate, market_status
@@ -65,6 +64,6 @@ class InstrumentAttributes(object):
             adj = lu.replace(day=1,hour=self.sw_hour,minute=0)
             fin = adj - timedelta(days=1)
         else:
-            raise NotImplmented("Time-frame : %s Not Supported")
+            raise NotImplmented("Time-frame : %s Not Supported" % time_frame)
         # Add Finished bar
         self.attrib[time_frame]['finbar'] = fin
