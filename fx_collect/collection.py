@@ -36,7 +36,6 @@ class CollectionHandler(object):
             market_status, lastupdate, init_dt
         )
         for time_frame in i.time_frames:
-            i._add_time_frame(time_frame)
             # Finished bar published by the broker
             i.calculate_finished_bar(time_frame)
             # Earlest & Latest datetime
