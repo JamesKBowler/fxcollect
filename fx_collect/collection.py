@@ -9,6 +9,12 @@ import sys
 
 class CollectionHandler(object):
     def __init__(self, broker, instrument):
+        """
+        The purpose of 'fxcmminer' is to automate the collection
+        of historical and live financial time serais data from
+        FXCM, then store these data in a MariaDB database ready
+        for backtesting or live execution.
+        """
         self.br_handler = FXCMBrokerHandler()
         self.db_handler = DatabaseHandler('fxcm')
         self.time_frames = self.br_handler.supported_time_frames
@@ -17,7 +23,7 @@ class CollectionHandler(object):
             self._initialise_instrument(
                 broker, instrument, time_frame
             )
-      
+
     def _initialise_instrument(
         self, broker, instrument, time_frame
     ):
@@ -50,17 +56,16 @@ class CollectionHandler(object):
         self.tracked[time_frame] = i
         # Create first collecton job.
         print(
-            "INIT    : i: %s tf: %s min: %s max: %s" % (
+            "INIT    : %s %s dbmin: %s dbmax: %s" % (
                 instrument, time_frame, i.db_min, i.db_max)
         )
-      
         self._data_collection(
             instrument, time_frame, from_date, to_date)
         print(
-            "DONE    : i: %s tf: %s min: %s max: %s" % (
+            "DONE    : %s %s dbmin: %s dbmax: %s" % (
                 instrument, time_frame, i.db_min, i.db_max)
         )
-      
+
     def _status_monitoring(self):
         while True:
             update = self.br_handler._get_status()
@@ -74,7 +79,7 @@ class CollectionHandler(object):
                     i.calculate_finished_bar()
                     if i.fin_bar > i.db_max:
                         print(
-                            'SIGNAL  : i: %s tf: %s fb: %s dbm: %s' % (
+                            'SIGNAL  : %s %s finbar: %s dbmax: %s' % (
                                 i.instrument, i.time_frame, i.fin_bar,i.db_max)
                         )
                         from_date = i.db_max + timedelta(minutes=1)
@@ -87,7 +92,7 @@ class CollectionHandler(object):
         self, instrument, time_frame, dtfm, dtto
     ):
         print(
-            "GET     : i: %s tf: %s fm: %s to: %s" % (
+            "GET     : %s %s dtfm: %s dtto: %s" % (
                 instrument, time_frame, dtfm, dtto)
         )
         data = 'foobars'
@@ -96,18 +101,18 @@ class CollectionHandler(object):
             data = self.br_handler._get_bars(
                 instrument, time_frame, dtfm, dtto)
             if len(data) > 0:
-                pd_min = data['date'].min().item()
-                pd_max = data['date'].max().item()
-                dtto = pd_min - timedelta(minutes=1)
-                if pd_min < i.db_min: i.db_min = pd_min
-                if pd_max >= i.db_max: i.db_max = pd_max
+                pdfm = data['date'].min().item()
+                pdto = data['date'].max().item()
+                dtto = pdfm - timedelta(minutes=1)
+                if pdfm < i.db_min: i.db_min = pdfm
+                if pdto >= i.db_max: i.db_max = pdto
                 self.db_handler.write(
                     instrument, time_frame, data)
                 print(
-                    "DATA    : i: %s tf: %s fm: %s to: %s" % (
-                        i.instrument, i.time_frame, pd_min, pd_max)
+                    "DATA    : %s %s pdfm: %s pdto: %s" % (
+                        i.instrument, i.time_frame, pdfm, pdto)
                 )
-                if pd_min == dtfm: break
+                if pdfm == dtfm: break
 
 broker, instrument = sys.argv[1], sys.argv[2]
 ih = CollectionHandler(broker, instrument)._status_monitoring()
