@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
-class Instrument(object):
+class InstrumentAttributes(object):
     def __init__(
-        self, broker, instrument, time_frame,
+        self, broker, instrument, time_frames,
         market_status, last_update, dt
     ):
         # Start of Trading Week
@@ -11,51 +11,60 @@ class Instrument(object):
         self.td = self.trading_wk_str.hour - 22
         # Passport
         self.instrument = instrument
-        self.time_frame = time_frame
         self.market_status = market_status
         self.last_update = last_update
-        # Dates
-        self.db_min = None
-        self.db_max = None
-        self.fin_bar = None
+        self.time_frames = time_frames
+        # Time frame storage dict
+        self.attrib = {}
+        
+    def _add_time_frame(self, time_frame):
+        self.attrib[time_frame] = {
+                    'db_min' : None,
+                    'db_max' : None,
+                    'finbar' : None
+                }
 
-    def update(self, lastupdate, market_status):
+    def update_instrument_status(
+        self, lastupdate, market_status
+    ):
         self.last_update = lastupdate
         self.market_status = market_status
-      
-    def calculate_finished_bar(self):
+
+    def _update_database_datetime(
+        self, time_frame, pdfm, pdto
+    ):
+        if pdfm < self.attrib[time_frame]['db_min']: 
+            self.attrib[time_frame]['db_min'] = pdfm
+        if pdto >= self.attrib[time_frame]['db_max']:
+            self.attrib[time_frame]['db_max'] = pdto
+
+    def calculate_finished_bar(self, time_frame):
         """
         Stops unfinished bars from being written to the
         database by calculating the latest finshed bar.
         """
         lu = self.last_update.replace(second=0,microsecond=0)
-        tf = int(self.time_frame[1:])
-        
+        tf = int(time_frame[1:])
         # New York Offset
         if self.td % 2 == 0: nyo = 1
         else: nyo = 2
-          
-        if self.time_frame[:1] == "m":  # Minute
+        if time_frame[:1] == "m":  # Minute
             adj = lu
             l = list(range(0,60,tf))
             cm = min(l, key=lambda x:abs(x-adj.minute))
             fin = adj.replace(minute=cm)-timedelta(minutes=tf)
-            
-        elif self.time_frame[:1] == "H":  # Hour
+        elif time_frame[:1] == "H":  # Hour
             adj = lu.replace(minute=0)
             l = [e-nyo for e in [i + tf - 2 for i in list(range(1,25,tf))]]
             ch = min(l, key=lambda x:abs(x-adj.hour))
             fin = adj.replace(hour=ch)-timedelta(hours=tf)            
-
-        elif self.time_frame[:1] == "D":  # Day
+        elif time_frame[:1] == "D":  # Day
             adj = lu.replace(hour=self.sw_hour,minute=0)
             fin = adj - timedelta(days=tf)
-            
-        elif self.time_frame[:1] == "M":  # Month
+        elif time_frame[:1] == "M":  # Month
             adj = lu.replace(day=1,hour=self.sw_hour,minute=0)
             fin = adj - timedelta(days=1)
-
         else:
             raise NotImplmented("Time-frame : %s Not Supported")
-            
-        self.fin_bar = fin
+        # Add Finished bar
+        self.attrib[time_frame]['finbar'] = fin
