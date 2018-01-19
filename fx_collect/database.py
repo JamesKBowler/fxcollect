@@ -4,7 +4,6 @@ import MySQLdb
 from settings import DB_HOST, DB_USER, DB_PASS
 import re
 
-
 class DatabaseHandler(object):
     def __init__(self, broker):
         """
@@ -12,18 +11,32 @@ class DatabaseHandler(object):
         with the MariaDB database.
         """
         self.broker = broker
-
-    def _datebase_cursor(self):
-        """
-        Creates a session and cursor
-        """
-        db = MySQLdb.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            passwd=DB_PASS
-        )
-        cur = db.cursor()
-        return db, cur
+        
+    def _execute_query(self, query):
+        try:
+            connection = MySQLdb.connect(
+                host=DB_HOST, user=DB_USER, passwd=DB_PASS
+            )
+            cursor = connection.cursor()
+            cursor.execute(query)
+            results = cursor.fetchall()
+            if results: return results
+            else: return None
+        finally:
+            cursor.close()
+            connection.close()
+            
+    def _execute_many(self, stmt, data):
+        try:
+            connection = MySQLdb.connect(
+                host=DB_HOST, user=DB_USER, passwd=DB_PASS
+            )
+            cursor = connection.cursor()
+            cursor.executemany(stmt, data)
+            connection.commit()
+        finally:
+            cursor.close()
+            connection.close()
 
     def _name_conversion(self, instrument, time_frame=None):
         """
@@ -37,53 +50,50 @@ class DatabaseHandler(object):
             tb_name = 'tbl_%s_%s' % (ins, time_frame)
             return db_name, tb_name
         else: return db_name
-
-    def return_extremity_dates(
-        self, instrument, time_frame
-    ):
-        """
-        Collects the latest date from the database.
-        """
-        db, cur = self._datebase_cursor()
-        db_name, tb_name = self._name_conversion(
-            instrument, time_frame)
-        try:
-            cur.execute("SELECT `date` \
-                          FROM %s.%s \
-                          WHERE `date`=(SELECT MIN(`date`) \
-                         FROM %s.%s);" % (
-                    db_name, tb_name, db_name, tb_name
-                )
-            )
-            db_min = cur.fetchone()[0]
-            cur.execute("SELECT `date` \
-                          FROM %s.%s \
-                          WHERE `date`=(SELECT MAX(`date`) \
-                         FROM %s.%s);" % (
-                    db_name, tb_name, db_name, tb_name
-                )
-            )
-            db_max = cur.fetchone()[0]
-            return db_min, db_max
-        except TypeError: return False
-        finally:
-            cur.close()
-            db.close()
-
+        
+        
     def get_databases(self):
         """        
         Returns a list of the current databases.
         """
         current_databases = []
-        db, cur = self._datebase_cursor()
-        if cur.execute("SHOW DATABASES LIKE '%s_bar_" % (
-            self.broker) + "%';") != 0:
-            for (db_name,) in cur.fetchall():
+        query = """
+                SHOW DATABASES LIKE '%s_bar_""" % (
+                self.broker) + "%';"
+        result = self._execute_query(query)
+        if result is not None:
+            for (db_name,) in result:
                 dbn = db_name.replace('%s_bar_' % self.broker, '')
                 current_databases.append(dbn)
-        cur.close()
-        db.close()
-        return current_databases
+        return current_databases[1:]
+
+    def return_extremity_dates(
+        self, instrument, time_frame
+    ):
+        """
+        Returns the earlest and latest datetime.
+        """
+        db_name, tb_name = self._name_conversion(
+            instrument, time_frame)
+        query = """
+            SELECT `date` 
+            FROM (SELECT `date` 
+                  FROM %s.%s 
+                  ORDER BY `date` ASC LIMIT 1
+                  ) a
+            UNION
+            SELECT `date` 
+            FROM (SELECT `date` 
+                  FROM %s.%s 
+                  ORDER BY `date` DESC LIMIT 1
+                  ) b;""" % (
+            db_name, tb_name, db_name, tb_name)
+        result = self._execute_query(query)
+        if result:
+            (dbmin,) = result[0]
+            (dbmax,) = result[1]
+            return dbmin, dbmax
+        else: return False
 
     def create(self, instrument, time_frames):
         """
@@ -91,19 +101,18 @@ class DatabaseHandler(object):
         """
         databases = self.get_databases()
         db_name = self._name_conversion(instrument)
-        db, cur = self._datebase_cursor()
         if (
             re.sub('[^A-Za-z0-9]+','',instrument
             ) not in databases
         ):
-            cur.execute("CREATE DATABASE IF NOT EXISTS %s;" % (db_name))
+            self._execute_query("CREATE DATABASE IF NOT EXISTS %s;" % (db_name))
         for time_frame in time_frames:            
             db_name, tb_name = self._name_conversion(
                 instrument, time_frame)
-            if not cur.execute(
+            if not self._execute_query(
                 "SHOW TABLES FROM %s LIKE '%s';" % (db_name, tb_name)
             ):
-                cur.execute("CREATE TABLE IF NOT EXISTS %s.%s ( \
+                self._execute_query("CREATE TABLE IF NOT EXISTS %s.%s ( \
                              `date` DATETIME NOT NULL, \
                              `bidopen` DECIMAL(19,6) NULL, \
                              `bidhigh` DECIMAL(19,6) NULL, \
@@ -116,7 +125,6 @@ class DatabaseHandler(object):
                              `volume` BIGINT NULL, \
                             PRIMARY KEY (`date`)) \
                             ENGINE=InnoDB;" % (db_name, tb_name))
-        db.close()
 
     def write(self, instrument, time_frame, data):
         """
@@ -136,23 +144,10 @@ class DatabaseHandler(object):
         | 2017-04-27 10:10:00 | 17.294000 | 17.296000 | 17.281000 | 17.291000 | 17.338000 | 17.338000 | 17.328000 | 17.333000 |     50 |
         """
         db_name, tb_name = self._name_conversion(
-            instrument, time_frame)
-        db, cur = self._datebase_cursor()
+            instrument, time_frame)        
         insert = "REPLACE INTO %s.%s " % (db_name, tb_name)
         stmt = """(date, bidopen, bidhigh, bidlow, bidclose,
                   askopen, askhigh, asklow, askclose, volume
                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
         sql = insert + stmt
-        try:
-            cur.executemany(sql, data.tolist())
-            db.commit()
-        except pymysql.err.IntegrityError as e:
-            print("[XX] Database Error   : %s.%s | %s" % (
-                db_name, tb_name, e))
-            print("[XX] Database Error   : %s, %s, %s, %s" % (
-                instrument, time_frame,
-                data['date'].min().item(), data['date'].max().item())
-            )
-        finally:
-            cur.close()
-            db.close()
+        self._execute_many(sql, data.tolist())
