@@ -71,8 +71,8 @@ class CollectionHandler(object):
             update = self.br_handler._get_status()
             for tf in self.tracked:
                 i = self.tracked[tf]
-                lastupdate = update[i.instrument][0]
-                market_status = update[i.instrument][1]
+                market_status = update[i.instrument][0]
+                lastupdate = update[i.instrument][1]
                 i.update(lastupdate, market_status)
                 if i.market_status == 'O':  # Open
                     # Find the last finished bar published by the broker
