@@ -2,10 +2,12 @@ from instrument import InstrumentAttributes
 from datetime import datetime, timedelta
 from broker import FXCMBrokerHandler
 from database import DatabaseHandler
+from logger import Logger
 
 import time
 import sys
 
+LOG_MESSAGE = Logger()
 
 class CollectionHandler(object):
     def __init__(self, broker, instrument):
@@ -14,7 +16,7 @@ class CollectionHandler(object):
         of historical and live financial time serais data from
         FXCM, then store these data in a MariaDB database ready
         for backtesting or live execution.
-        """              
+        """
         self.br_handler = FXCMBrokerHandler()
         self.db_handler = DatabaseHandler('fxcm')
         self.tracked = None
