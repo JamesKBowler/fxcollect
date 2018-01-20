@@ -79,6 +79,11 @@ class FXCMBrokerHandler(object):
             'D1'
         )[0].date
 
+    def _get_next_tick(self, offer):
+        bid = self.session.get_bid(offer)
+        ask = self.session.get_ask(offer)
+        return bid, ask
+
     def _get_bars(
         self, offer, time_frame, dtfm, dtto
     ):
