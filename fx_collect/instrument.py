@@ -30,7 +30,7 @@ class InstrumentAttributes(object):
         self.last_update = lastupdate
         self.market_status = market_status
 
-    def _update_database_datetime(
+    def update_database_datetime(
         self, time_frame, pdfm, pdto
     ):
         if pdfm < self.attrib[time_frame]['db_min']: 
