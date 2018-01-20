@@ -41,9 +41,7 @@ Specification:
   `$ sudo timedatectl set-timezone UTC`  
  
  7. Execute:  
-  `$ mkdir fxcollect`  
-  `$ cd fxcollect`  
-  `$ python3 ~/fxcollect/fxcollect/main.py`  
+  `$ python3 ~/fxcollect/fx_collect/main.py`  
  
 ##### All FXCM data will take about 30 hours to download.  
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
