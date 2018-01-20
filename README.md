@@ -1,7 +1,6 @@
-# fxcmminer 
-(renaming to fx_collect)
+# fxcollect
 
-The purpose of 'fxcmminer' is to automate the collection of historical and live financial time serais data from FXCM, then store these data in a MariaDB database ready for backtesting or live execution.
+The purpose of 'fxcollect' is to automate the collection of historical and live financial time serais data from FXCM, then store these data in a MariaDB database ready for backtesting or live execution.
 
 ### Setup
 Specification: 
@@ -35,16 +34,16 @@ Specification:
      https://github.com/JamesKBowler/python-forexconnect  
  
  5. Download this repository  
-  `$ git clone https://github.com/JamesKBowler/fxcmminer ~/`  
+  `$ git clone https://github.com/JamesKBowler/fxcollect ~/`  
  
  ##### FXCM price data stored in UTC time zone.  
  6. Set the system time zone to UTC  
   `$ sudo timedatectl set-timezone UTC`  
  
  7. Execute:  
-  `$ mkdir fx_collect`  
-  `$ cd fx_collect`  
-  `$ python3 ~/fxcmminer/fx_collect/main.py`  
+  `$ mkdir fxcollect`  
+  `$ cd fxcollect`  
+  `$ python3 ~/fxcollect/fxcollect/main.py`  
  
 ##### All FXCM data will take about 30 hours to download.  
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
