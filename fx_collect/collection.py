@@ -153,7 +153,7 @@ class CollectionHandler(object):
                 self.db_handler.write(
                     instrument, time_frame, data)
                 # Update instrument attribuites
-                self.tracked._update_database_datetime(
+                self.tracked.update_database_datetime(
                     time_frame, pdfm, pdto)
                 if pdfm == dtfm: break  # Complete
 
