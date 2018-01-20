@@ -18,7 +18,7 @@ class Logger(object):
             h.setLevel(logging.DEBUG)
             self.root_logger.addHandler(h)
 
-    def _debug(self, *msg):
+    def debug(self, *msg):
         msgtype = msg[0]
         msgattr = "%s : %s %s" % msg[0:3]
         a = msg[4].strftime('%Y/%m/%d %H:%M')
