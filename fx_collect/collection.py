@@ -35,7 +35,7 @@ class InstrumentCollectionHandler(object):
         # Get the latest daliy bar datetime & setup
         # instrument datetime calculation varables
         init_dt = self.br_handler._init_datetime(instrument)
-        utc_now = datetime.utcnow()
+        self.utc_now = datetime.utcnow()
         wk_str = init_dt - timedelta(days=init_dt.weekday()+1)
         wk_end = wk_str + timedelta(days=5, minutes=-1)
         self.hours = np.arange(
@@ -48,7 +48,7 @@ class InstrumentCollectionHandler(object):
         self.tracked = InstrumentAttributes(
                 broker, instrument, time_frames,
                 market_status, last_update,
-                utc_now, wk_str, wk_end
+                self.utc_now, wk_str, wk_end
         )
         self._setup_first_collection(
             instrument, time_frames, market_status
@@ -65,13 +65,13 @@ class InstrumentCollectionHandler(object):
             dtx = self.db_handler.return_extremity_dates(
                 instrument, time_frame)
             # Set first history collection dates
+            from_date = datetime(1899, 12, 30, 0, 0, 0)  # OLE_ZERO
             if dtx:  # Start from lowest db date
                 db_min, db_max = dtx
                 to_date = db_min - timedelta(minutes=1)
             else: # No dates, starting new
-                db_min, db_max = utc_now, from_date
+                db_min, db_max = self.utc_now, from_date
                 to_date = self.tracked.attribs[time_frame]['finbar']
-            from_date = datetime(1899, 12, 30, 0, 0, 0)  # OLE_ZERO
             # Store database min and max datetime information
             self.tracked.attribs[time_frame]['db_min'] = db_min
             self.tracked.attribs[time_frame]['db_max'] = db_max
@@ -129,11 +129,14 @@ class InstrumentCollectionHandler(object):
             fin = curr_bar.item() - timedelta(days=7)
         elif time_frame[:1] == "M":
             # Monthly Bar
-            d = lu.replace(day=1,hour=self.hours[0].item().time().hour)
+            d = lu.replace(
+                day=1,hour=self.hours[0].item().time().hour, second=0)
             curr_bar = d - timedelta(days=1)
             fin = curr_bar.replace(day=1) - timedelta(days=1)
         else:
-            raise NotImplmented("Time-frame : %s Not Supported" % time_frame)
+            raise NotImplmented(
+                "Unsupported time_frame : %s" % (time_frame)
+            )
         # Add Finished bar
         self.tracked.attribs[time_frame]['finbar'] = fin
 
@@ -148,10 +151,12 @@ class InstrumentCollectionHandler(object):
         data = 'foobars'
         init_dtto = dtto
         pdfm = dtfm
+        log = False
         while len(data) > 1: 
             data = self.br_handler._get_bars(
                 instrument, time_frame, dtfm, dtto)
             if len(data) > 0:
+                log = True
                 # Get first and last date
                 pdfm = data['date'].min().item()
                 pdto = data['date'].max().item()
@@ -166,7 +171,7 @@ class InstrumentCollectionHandler(object):
                 )
                 if pdfm == dtfm: break  # Complete
         # Logging
-        if len(data) > 0:
+        if log:
             if dtfm < pdfm: dtfm = pdfm
             LOG._debug("DATA", instrument, time_frame,
                 market_status, dtfm, init_dtto)
