@@ -50,9 +50,6 @@ class InstrumentCollectionHandler(object):
                 market_status, last_update,
                 utc_now, wk_str, wk_end
         )
-        # New York Offset
-        if self.tracked.td % 2 == 0: self.nyo = 0
-        else: self.nyo = 1
         self._setup_first_collection(
             instrument, time_frames, market_status
         )
@@ -75,17 +72,20 @@ class InstrumentCollectionHandler(object):
             fin = unfin_time - timedelta(minutes=tf)
 
         elif time_frame[:1] == "H":
-            hr_range = self.hours[0::tf]
-            next_bar = min(i for i in hr_range if i > init_dt)
+            # Hourly Bar
+            hr_points = self.hours[0::tf]
+            next_bar = min(i for i in hr_points if i > lu)
             curr_bar = next_bar - tf
-            npfin = (curr_bar - tf)
-            new_york_offset = npfin - self.nyo
-            fin = new_york_offset.item()
+            npfin = curr_bar - tf
+            fin = npfin.item()
 
         elif time_frame[:1] == "D":
             # Daliy Bar
-            adj = lu.replace(hour=self.tracked.str_hour,minute=0)
-            fin = adj - timedelta(days=tf)
+            dyr_points = self.hours[0::24*tf]
+            next_bar = min(i for i in dyr_points if i > lu)
+            curr_bar = next_bar - tf
+            npfin = curr_bar - tf
+            fin = npfin.item()
 
         elif time_frame[:1] == "M":
             # Monthly Bar
