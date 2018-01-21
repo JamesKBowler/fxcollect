@@ -10,7 +10,7 @@ import time
 import sys
 import json
 
-LOG = Logger()
+#LOG = Logger()
 
 class InstrumentCollectionHandler(object):
     def __init__(self, broker, instrument):
@@ -87,6 +87,11 @@ class InstrumentCollectionHandler(object):
             npfin = curr_bar - tf
             fin = npfin.item()
 
+        elif time_frame[:1] == "W":
+            # Weekly Bar
+            curr_bar = self.hours[0] - 24
+            fin = curr_bar - timedelta(days=7)
+            
         elif time_frame[:1] == "M":
             # Monthly Bar
             d = lu.replace(day=1,hour=self.hours[0].item().time().hour)
