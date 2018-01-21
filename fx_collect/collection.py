@@ -5,17 +5,18 @@ from database import DatabaseHandler
 from settings import JSON_DIR
 from logger import Logger
 
+import numpy as np
 import time
 import sys
 import json
 
-LOG = Logger()
+#LOG = Logger()
 
 class InstrumentCollectionHandler(object):
     def __init__(self, broker, instrument):
         """
-        The purpose of 'fxcmminer' is to automate the collection
-        of historical and live financial time serais data from
+        The purpose of 'fxcollect' is to automate the collection
+        of historical and live financial time series data from
         FXCM, then store these data in a MariaDB database ready
         for backtesting or live execution.
         """              
@@ -39,6 +40,8 @@ class InstrumentCollectionHandler(object):
         utc_now = datetime.utcnow()
         wk_str = init_dt - timedelta(days=init_dt.weekday()+1)
         wk_end = wk_str + timedelta(days=5, minutes=-1)
+        self.hours = np.arange(
+            wk_str, wk_end, dtype='datetime64[h]')
         # Live collection stop date
         self.stop_date = wk_end + timedelta(minutes=1)
         # Initialise instrument
@@ -48,13 +51,13 @@ class InstrumentCollectionHandler(object):
                 utc_now, wk_str, wk_end
         )
         # New York Offset
-        if self.tracked.td % 2 == 0: self.nyo = 1
-        else: self.nyo = 2
+        if self.tracked.td % 2 == 0: self.nyo = 0
+        else: self.nyo = 1
         self._setup_first_collection(
             instrument, time_frames, market_status
         )
 
-    def _calculate_finished_bar(self, time_frame):
+    def calculate_finished_bar(self, time_frame):
         """
         Stops unfinished bars from being written to the
         database by calculating the latest finshed bar.
@@ -64,26 +67,20 @@ class InstrumentCollectionHandler(object):
         )
         tf = int(time_frame[1:])
 
-        # Select time_frame last bar calculation
+        # Select time_frame last bar calculation        
         if time_frame[:1] == "m":
             # Minutely Bar
-            adj = lu
-            l = list(range(0,60,tf))
-            cm = min(
-                l, key=lambda x:abs(x-adj.minute)
-            )
-            fin = adj.replace(minute=cm)-timedelta(minutes=tf)
+            offset = lu.time().minute % tf
+            unfin_time = lu - timedelta(minutes=offset)
+            fin = unfin_time - timedelta(minutes=tf)
 
         elif time_frame[:1] == "H":
-            # Hourly Bar
-            adj = lu.replace(minute=0)
-            l = [
-                  e-self.nyo for e in [
-             i + tf - 2 for i in list(range(1,25,tf))
-                  ]
-            ]
-            ch = min(l, key=lambda x:abs(x-adj.hour))
-            fin = adj.replace(hour=ch)-timedelta(hours=tf)
+            hr_range = self.hours[0::tf]
+            next_bar = min(i for i in hr_range if i > init_dt)
+            curr_bar = next_bar - tf
+            npfin = (curr_bar - tf)
+            new_york_offset = npfin - self.nyo
+            fin = new_york_offset.item()
 
         elif time_frame[:1] == "D":
             # Daliy Bar
@@ -106,7 +103,7 @@ class InstrumentCollectionHandler(object):
     ):
         for time_frame in time_frames:
             # Inital finished bar calculation
-            self._calculate_finished_bar(time_frame)
+            self.calculate_finished_bar(time_frame)
             # Earlest & Latest datetime for time_frame
             dtx = self.db_handler.return_extremity_dates(
                 instrument, time_frame)
@@ -228,5 +225,7 @@ class InstrumentCollectionHandler(object):
         with open(file_dir, 'w') as f:
             json.dump(snapshot, f)
 
-broker, instrument = sys.argv[1], sys.argv[2]
-ih = InstrumentCollectionHandler(broker, instrument).status_monitoring()
+#broker, instrument = sys.argv[1], sys.argv[2]
+broker, instrument = 'fxcm', 'GBP/USD'
+ih = InstrumentCollectionHandler(broker, instrument)
+ih.status_monitoring()
