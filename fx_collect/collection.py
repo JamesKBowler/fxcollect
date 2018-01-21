@@ -39,11 +39,11 @@ class InstrumentCollectionHandler(object):
         init_dt = self.br_handler._init_datetime(instrument)
         utc_now = datetime.utcnow()
         wk_str = init_dt - timedelta(days=init_dt.weekday()+1)
-        wk_end = wk_str + timedelta(days=5, minutes=-1)
+        wk_end = wk_str + timedelta(days=5)
         self.hours = np.arange(
             wk_str, wk_end, dtype='datetime64[h]')
         # Live collection stop date
-        self.stop_date = wk_end + timedelta(minutes=1)
+        self.stop_date = wk_end
         # Initialise instrument
         self.tracked = InstrumentAttributes(
                 broker, instrument, time_frames,
