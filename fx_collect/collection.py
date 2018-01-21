@@ -1,9 +1,10 @@
 from instrument import InstrumentAttributes
-from datetime import datetime, timedelta
 from broker import FXCMBrokerHandler
 from database import DatabaseHandler
 from settings import JSON_DIR
 from logger import Logger
+
+from datetime import datetime, timedelta
 
 import numpy as np
 import time
@@ -31,19 +32,18 @@ class InstrumentCollectionHandler(object):
     def _initialise_instrument(
         self, broker, instrument, time_frames
     ):
-        # Retrive instrument attribuites from broker
-        status = self.br_handler._get_status(instrument)
-        market_status, last_update = status
         # Get the latest daliy bar datetime & setup
         # instrument datetime calculation varables
         init_dt = self.br_handler._init_datetime(instrument)
         utc_now = datetime.utcnow()
         wk_str = init_dt - timedelta(days=init_dt.weekday()+1)
-        wk_end = wk_str + timedelta(days=5)
+        wk_end = wk_str + timedelta(days=5, minutes=-1)
         self.hours = np.arange(
             wk_str, wk_end, dtype='datetime64[h]')
-        # Live collection stop date
-        self.stop_date = wk_end
+        # Retrive instrument attribuites from broker
+        status = self.br_handler._get_status(instrument)
+        market_status, last_update = status
+        self.stop_date = wk_end + timedelta(minutes=1)
         # Initialise instrument
         self.tracked = InstrumentAttributes(
                 broker, instrument, time_frames,
@@ -54,73 +54,24 @@ class InstrumentCollectionHandler(object):
             instrument, time_frames, market_status
         )
 
-    def calculate_finished_bar(self, time_frame):
-        """
-        Stops unfinished bars from being written to the
-        database by calculating the latest finshed bar.
-        """
-        lu = self.tracked.last_update.replace(
-            second=0,microsecond=0
-        )
-        tf = int(time_frame[1:])
-
-        # Select time_frame last bar calculation        
-        if time_frame[:1] == "m":
-            # Minutely Bar
-            offset = lu.time().minute % tf
-            unfin_time = lu - timedelta(minutes=offset)
-            fin = unfin_time - timedelta(minutes=tf)
-
-        elif time_frame[:1] == "H":
-            # Hourly Bar
-            hr_points = self.hours[0::tf]
-            next_bar = min(i for i in hr_points if i > lu)
-            curr_bar = next_bar - tf
-            npfin = curr_bar - tf
-            fin = npfin.item()
-
-        elif time_frame[:1] == "D":
-            # Daliy Bar
-            dy_points = self.hours[0::24*tf]
-            next_bar = min(i for i in dy_points if i > lu)
-            curr_bar = next_bar - tf
-            npfin = curr_bar - tf
-            fin = npfin.item()
-
-        elif time_frame[:1] == "W":
-            # Weekly Bar
-            curr_bar = self.hours[0] - 24
-            fin = curr_bar.item() - timedelta(days=7)
-            
-        elif time_frame[:1] == "M":
-            # Monthly Bar
-            d = lu.replace(day=1,hour=self.hours[0].item().time().hour)
-            curr_bar = d - timedelta(days=1)
-            fin = curr_bar.replace(day=1) - timedelta(days=1)
-
-        else:
-            raise NotImplmented("Time-frame : %s Not Supported")
-
-            # Add Finished bar
-        self.tracked.attribs[time_frame]['finbar'] = fin
-        
     def _setup_first_collection(
         self, instrument, time_frames, market_status
     ):
         for time_frame in time_frames:
             # Inital finished bar calculation
-            self.calculate_finished_bar(time_frame)
+            self._calculate_finished_bar(time_frame)
             # Earlest & Latest datetime for time_frame
+            # from the database
             dtx = self.db_handler.return_extremity_dates(
                 instrument, time_frame)
             # Set first history collection dates
-            from_date = datetime(1899, 12, 30, 0, 0, 0)  # OLE_ZERO
             if dtx:  # Start from lowest db date
                 db_min, db_max = dtx
                 to_date = db_min - timedelta(minutes=1)
             else: # No dates, starting new
                 db_min, db_max = utc_now, from_date
                 to_date = self.tracked.attribs[time_frame]['finbar']
+            from_date = datetime(1899, 12, 30, 0, 0, 0)  # OLE_ZERO
             # Store database min and max datetime information
             self.tracked.attribs[time_frame]['db_min'] = db_min
             self.tracked.attribs[time_frame]['db_max'] = db_max
@@ -132,9 +83,59 @@ class InstrumentCollectionHandler(object):
                 instrument, time_frame,
                 from_date, to_date, market_status
             )
-
         # Save JSON to file
         self._save_update()
+
+    def _calculate_finished_bar(self, time_frame):
+        """
+        Stops unfinished bars from being written to the
+        database by calculating the latest finshed bar.
+        """
+        lu = self.tracked.last_update.replace(
+            second=0,microsecond=0
+        )
+        tf = int(time_frame[1:])
+        # Select time_frame last bar calculation        
+        if time_frame[:1] == "m":
+            # Minutely Bar
+            if lu > self.stop_date:
+                lu = self.stop_date
+            offset = lu.time().minute % tf
+            unfin_time = lu - timedelta(minutes=offset)
+            fin = unfin_time - timedelta(minutes=tf)
+        elif time_frame[:1] == "H":
+            # Hourly Bar
+            hr_points = self.hours[0::tf]
+            if lu < hr_points[-2]:
+                next_bar = min(i for i in hr_points if i > lu)
+                curr_bar = next_bar - tf
+                npfin = curr_bar - tf
+                fin = npfin.item()
+            else:
+                fin = hr_points[-1].item()
+        elif time_frame[:1] == "D":
+            # Daliy Bar
+            dy_points = self.hours[0::24*tf]
+            if lu < dy_points[-2]:
+                next_bar = min(i for i in dy_points if i > lu)
+                curr_bar = next_bar - tf
+                npfin = curr_bar - tf
+                fin = npfin.item()
+            else:
+                fin = dy_points[-1].item()
+        elif time_frame[:1] == "W":
+            # Weekly Bar
+            curr_bar = self.hours[0] - 24
+            fin = curr_bar.item() - timedelta(days=7)
+        elif time_frame[:1] == "M":
+            # Monthly Bar
+            d = lu.replace(day=1,hour=self.hours[0].item().time().hour)
+            curr_bar = d - timedelta(days=1)
+            fin = curr_bar.replace(day=1) - timedelta(days=1)
+        else:
+            raise NotImplmented("Time-frame : %s Not Supported" % time_frame)
+        # Add Finished bar
+        self.tracked.attribs[time_frame]['finbar'] = fin
 
     def _data_collection(
         self, instrument, time_frame,
@@ -178,8 +179,8 @@ class InstrumentCollectionHandler(object):
             self.tracked.market_status = 'C'
             self._save_update()
             print(
-                "Stopping because broker is",
-                "closed for bussiness"
+                "Stopping live collection because",
+                "broker is closed for bussiness"
             )
             return False
 
@@ -203,7 +204,7 @@ class InstrumentCollectionHandler(object):
                 if market_status == 'O': # Open
                     for time_frame in self.tracked.time_frames:
                         # Find the last finished bar published by the broker
-                        self.calculate_finished_bar(time_frame)
+                        self._calculate_finished_bar(time_frame)
                         finbar = self.tracked.attribs[time_frame]['finbar']
                         db_max = self.tracked.attribs[time_frame]['db_max']
                         if finbar > db_max:
