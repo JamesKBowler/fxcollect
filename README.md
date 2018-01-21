@@ -1,6 +1,8 @@
 # fxcollect
 
-The purpose of 'fxcollect' is to automate the collection of historical and live financial time serais data from FXCM, then store these data in a MariaDB database ready for backtesting or live execution.
+The purpose of 'fxcollect' is to automate the collection of historical and live financial  
+time series data from FXCM, then store these data in a MariaDB database ready for backtesting  
+or live execution.  
 
 ### Setup
 Specification: 
