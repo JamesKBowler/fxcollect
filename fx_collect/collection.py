@@ -10,7 +10,7 @@ import time
 import sys
 import json
 
-#LOG = Logger()
+LOG = Logger()
 
 class InstrumentCollectionHandler(object):
     def __init__(self, broker, instrument):
@@ -81,16 +81,17 @@ class InstrumentCollectionHandler(object):
 
         elif time_frame[:1] == "D":
             # Daliy Bar
-            dyr_points = self.hours[0::24*tf]
-            next_bar = min(i for i in dyr_points if i > lu)
+            dy_points = self.hours[0::24*tf]
+            next_bar = min(i for i in dy_points if i > lu)
             curr_bar = next_bar - tf
             npfin = curr_bar - tf
             fin = npfin.item()
 
         elif time_frame[:1] == "M":
             # Monthly Bar
-            adj = lu.replace(day=1,hour=self.tracked.str_hour,minute=0)
-            fin = adj - timedelta(days=1)
+            d = lu.replace(day=1,hour=self.hours[0].item().time().hour)
+            curr_bar = d - timedelta(days=1)
+            fin = curr_bar.replace(day=1) - timedelta(days=1)
 
         else:
             raise NotImplmented("Time-frame : %s Not Supported")
