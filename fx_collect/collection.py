@@ -10,7 +10,7 @@ import time
 import sys
 import json
 
-#LOG = Logger()
+LOG = Logger()
 
 class InstrumentCollectionHandler(object):
     def __init__(self, broker, instrument):
@@ -231,7 +231,7 @@ class InstrumentCollectionHandler(object):
         with open(file_dir, 'w') as f:
             json.dump(snapshot, f)
 
-#broker, instrument = sys.argv[1], sys.argv[2]
-broker, instrument = 'fxcm', 'GBP/USD'
+broker, instrument = sys.argv[1], sys.argv[2]
+#broker, instrument = 'fxcm', 'GBP/USD'
 ih = InstrumentCollectionHandler(broker, instrument)
 ih.status_monitoring()
