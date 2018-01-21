@@ -90,7 +90,7 @@ class InstrumentCollectionHandler(object):
         elif time_frame[:1] == "W":
             # Weekly Bar
             curr_bar = self.hours[0] - 24
-            fin = curr_bar - timedelta(days=7)
+            fin = curr_bar.item() - timedelta(days=7)
             
         elif time_frame[:1] == "M":
             # Monthly Bar
