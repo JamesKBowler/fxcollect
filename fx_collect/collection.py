@@ -8,10 +8,10 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import time
-import sys
 import json
+import sys
+import os
 
-LOG = Logger()
 
 class InstrumentCollectionHandler(object):
     def __init__(self, broker, instrument):
@@ -74,27 +74,54 @@ class InstrumentCollectionHandler(object):
             dtx = self.db_handler.return_extremity_dates(
                 instrument, time_frame)
             # Set first history collection dates
-            from_date = datetime(1899, 12, 30, 0, 0, 0)  # OLE_ZERO
+            from_date = datetime(1899, 12, 30)  # OLE_ZERO
             if dtx:  # Start from lowest db date
                 db_min, db_max = dtx
                 to_date = db_min - timedelta(minutes=1)
-            else: # No dates, starting new
+                # Logging Current
+                LOG._debug("CUR_", instrument, time_frame,
+                                  market_status, db_min, db_max)
+            else:  # No dates, starting new
                 db_min, db_max = self.utc_now, from_date
                 to_date = self.tracked.attribs[time_frame]['finbar']
+                # Logging New
+                LOG._debug("NEW_", instrument, time_frame,
+                                  market_status, from_date, to_date)
             # Store database min and max datetime information
             self.tracked.attribs[time_frame]['db_min'] = db_min
             self.tracked.attribs[time_frame]['db_max'] = db_max
-            # Create first collecton job.  
-            self._data_collection(
-                instrument, time_frame,
-                from_date, to_date, market_status
-            )
-            # Logging
+            # No point trying to collect more history from the
+            # lowest datebase date if the json file has been created.
+            if not os.path.exists('json_files/%s' % instrument): 
+                # Create first collecton job.
+                self._data_collection(
+                    instrument, time_frame,
+                    from_date, to_date, market_status
+                )
+        # Once all historical data is collected one
+        # final history collection will commence before
+        # proceeding with the live collection
+        for time_frame in time_frames:
+            # Finished bar calculation
+            self._calculate_finished_bar(time_frame)
             db_min = self.tracked.attribs[time_frame]['db_min']
             db_max = self.tracked.attribs[time_frame]['db_max']
-            LOG._debug("INIT", instrument, time_frame,
+            finbar = self.tracked.attribs[time_frame]['finbar']
+            # Catch up from the lastest datebase date.
+            from_date = db_max + timedelta(minutes=1)
+            to_date = finbar + timedelta(minutes=1)
+            if db_max < finbar:
+                self._data_collection(
+                    instrument, time_frame,
+                    from_date, to_date, market_status
+                )
+            # Logging 'LIVE' ready
+            db_max = self.tracked.attribs[time_frame]['db_max']
+            LOG._debug("RDY_", instrument, time_frame,
                               market_status, db_min, db_max)
-        # Save JSON to file
+        # Reverse time frames list so that 1 minute is processed first
+        self.tracked.time_frames = self.tracked.time_frames[::-1]
+        # Save initial JSON to file once historical data is complete
         self._save_update()
 
     def _calculate_finished_bar(self, time_frame):
@@ -166,21 +193,25 @@ class InstrumentCollectionHandler(object):
         dtfm, dtto, market_status
     ):
         # Logging
-        #LOG._debug("GET", instrument, time_frame,
-        #    market_status, dtfm, dtto)
+        LOG._debug("GET_", instrument, time_frame,
+            market_status, dtfm, dtto)
         # Setup
         data = 'foobars'
-        init_dtto = dtto
         pdfm = dtfm
         log = False
-        while len(data) > 1: 
-            data = self.br_handler._get_bars(
-                instrument, time_frame, dtfm, dtto)
-            if len(data) > 0:
-                log = True
+        while len(data) > 1:
+            data = self.br_handler.get_bars(
+                instrument, time_frame,
+                dtfm, dtto
+            )
+            if len(data) > 0:                    
+                data = data[data['date'] <= dtto]
+                if len(data) == 0: break
                 # Get first and last date
                 pdfm = data['date'].min().item()
                 pdto = data['date'].max().item()
+                LOG._debug("DATA", instrument, time_frame,
+                    market_status, pdfm, pdto)
                 # Avoiding time overlap
                 dtto = pdfm - timedelta(minutes=1)
                 # Update database
@@ -190,12 +221,17 @@ class InstrumentCollectionHandler(object):
                 self.tracked.update_database_datetime(
                     time_frame, pdfm, pdto
                 )
-                if pdfm == dtfm: break  # Complete
+                # Capture first pdto
+                if not log:
+                    log_max = pdto
+                log = True
+                # Complete
+                if pdfm <= dtfm: break
         # Logging
         if log:
             if dtfm < pdfm: dtfm = pdfm
-            LOG._debug("DATA", instrument, time_frame,
-                market_status, dtfm, init_dtto)
+            LOG._debug("DONE", instrument, time_frame,
+                market_status, pdfm, log_max)
 
     def _market_condition_open(self):
         self.utc_now = datetime.utcnow()
@@ -221,10 +257,13 @@ class InstrumentCollectionHandler(object):
             market_status, lastupdate = status
             if lastupdate > prev_update or prev_status != market_status:
                 bid, ask = self.br_handler._get_next_tick(instrument)
+                if prev_status == 'C':  # Stop false fires
+                    # Market has just opened or program has just started
+                    status_datetime = datetime.utcnow()
                 self.tracked.update_instrument_status(
-                    lastupdate, market_status,  
+                    lastupdate, market_status,
                     self.utc_now, bid, ask
-                )
+                )                
                 prev_update = lastupdate
                 prev_status = market_status
                 if market_status == 'O': # Open
@@ -233,12 +272,12 @@ class InstrumentCollectionHandler(object):
                         self._calculate_finished_bar(time_frame)
                         finbar = self.tracked.attribs[time_frame]['finbar']
                         db_max = self.tracked.attribs[time_frame]['db_max']
-                        if finbar > db_max:
+                        if finbar > db_max and finbar > status_datetime:
                             # New bar available
                             from_date = db_max + timedelta(minutes=1)
                             to_date = finbar + timedelta(minutes=1)
                             # Logging
-                            LOG._debug("SIGNAL", instrument, time_frame,
+                            LOG._debug("SIG_", instrument, time_frame,
                                 market_status, finbar, db_max)
                             # Create collecton on SIGNAL.
                             self._data_collection(
@@ -247,10 +286,11 @@ class InstrumentCollectionHandler(object):
                             )
                     # Total live collection speed for all time_frames
                     speed = datetime.utcnow() - lastupdate
-                # Save JSON to file
+                # Convert update to JSON and save to file
                 self._save_update()
-            # Broker session (memory) polling speed
-            time.sleep(0.001)
+            else:
+                # Broker session (memory) polling speed
+                time.sleep(0.1)
 
     def _save_update(self):
         snapshot = self.tracked.create_snapshot()
@@ -258,7 +298,9 @@ class InstrumentCollectionHandler(object):
         with open(file_dir, 'w') as f:
             json.dump(snapshot, f)
 
-#broker, instrument = sys.argv[1], sys.argv[2]
-broker, instrument = 'fxcm', 'GBP/USD'
+broker, instrument = sys.argv[1], sys.argv[2]
+LOG = Logger(instrument.replace('/',''))
+
+#broker, instrument = 'fxcm', 'GBP/USD'
 ih = InstrumentCollectionHandler(broker, instrument)
 ih.status_monitoring()
