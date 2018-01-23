@@ -2,9 +2,12 @@ from settings import FX_USER, FX_PASS, URL, FX_ENVR
 from datetime import datetime, timedelta
 
 import forexconnect as fx
+import queue
 import numpy as np
 import time
+import sys
 
+OLE_TIME_ZERO = datetime(1899, 12, 30)
 
 class FXCMBrokerHandler(object):
     """
@@ -13,13 +16,8 @@ class FXCMBrokerHandler(object):
     """
     def __init__(self):
         self.broker = 'fxcm'
-        # self.supported_time_frames = [
-        #     'm1', 'm5', 'm15', 'm30',
-        #     'H1', 'H2', 'H4', 'H8',
-        #     'D1'
-        # ]
         self.supported_time_frames = [
-            'D1',
+            'D1', 'W1', 'M1',
             'H8', 'H4', 'H2', 'H1',
             'm30', 'm15', 'm5', 'm1'
         ]
@@ -36,7 +34,7 @@ class FXCMBrokerHandler(object):
 
     def _session_status(self):
         if self.session.is_connected():
-        return True
+            return True
         else: return False
 
     def _login(self):
@@ -44,29 +42,35 @@ class FXCMBrokerHandler(object):
         while True:
             try:
                 self.session = fx.ForexConnectClient(
-                    FX_USER,
-                    FX_PASS,
-                    FX_ENVR,
-                    URL
+                    FX_USER, FX_PASS,
+                    FX_ENVR, URL
                 )
                 if self._session_status():
+                    con = True
                     break
             except RuntimeError: time.sleep(1)
-        if not self.session.is_connected():
+        if not con:
             raise Exception('Unable to login')
-
+            
     def _get_instruments(self):
         return self.session.get_offers()
 
     def _get_status(self, offer=None):
         def ole(o):
-            OLE_TIME_ZERO = datetime(1899, 12, 30, 0, 0, 0)
             return OLE_TIME_ZERO + timedelta(days=float(o))
         d = {}
-        d1 = self.session.get_market_status()
+        d1 = self.session.get_trading_status()
         d2 = self.session.get_time()
-        for k in d1.keys():
-            d[k] = (d1[k], ole(d2[k]))
+        if len(d1) > len(d2):
+            x = d1.keys()
+        else: x = d2.keys()
+        if offer not in x:
+            sys.exit('offer not in dict!! need to improve C++ code')
+        for k in x:
+            try:
+                d[k] = (d1[k], ole(d2[k]))
+            except KeyError:
+                d[k] = ('C', datetime.utcnow())
         if offer is not None:
             return d[offer]
         else: return d
@@ -74,8 +78,8 @@ class FXCMBrokerHandler(object):
     def _init_datetime(self, offer):
         return self.session.get_historical_prices(
             offer,
-            datetime.utcnow(),
-            datetime(1899, 12, 30, 0, 0, 0),
+            0,
+            0,
             'D1'
         )[0].date
 
@@ -83,12 +87,16 @@ class FXCMBrokerHandler(object):
         bid = self.session.get_bid(offer)
         ask = self.session.get_ask(offer)
         return bid, ask
-
-    def _get_bars(
-        self, offer, time_frame, dtfm, dtto
-    ):
+      
+    def get_bars(self, offer, time_frame, dtfm, dtto):
+        def ole(pydate):
+            delta = pydate - OLE_TIME_ZERO
+            return float(delta.days) + (float(delta.seconds) / 86400)
         fxdata =  self.session.get_historical_prices(
-            offer, dtfm, dtto, time_frame
+            offer,
+            ole(dtfm),
+            ole(dtto),
+            time_frame
         )
         npvalues = self._numpy_convert(fxdata)
         return self._integrity_check(npvalues)
