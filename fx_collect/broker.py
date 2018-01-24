@@ -52,50 +52,29 @@ class FXCMBrokerHandler(object):
         if not con:
             raise Exception('Unable to login')
             
-    def _get_instruments(self):
+    def get_offers(self):
         return self.session.get_offers()
 
-    def _get_status(self, offer=None):
-        def ole(o):
-            return OLE_TIME_ZERO + timedelta(days=float(o))
-        d = {}
-        d1 = self.session.get_trading_status()
-        d2 = self.session.get_time()
-        if len(d1) > len(d2):
-            x = d1.keys()
-        else: x = d2.keys()
-        if offer not in x:
-            sys.exit('offer not in dict!! need to improve C++ code')
-        for k in x:
-            try:
-                d[k] = (d1[k], ole(d2[k]))
-            except KeyError:
-                d[k] = ('C', datetime.utcnow())
-        if offer is not None:
-            return d[offer]
-        else: return d
+    def get_offer_status(self, offer):
 
-    def _init_datetime(self, offer):
+        status = self.session.get_offer_trading_status(offer)
+        utime = self.session.get_offer_time(offer)
+        return status, self._from_ole(utime) 
+
+    def get_initial_datetime(self, offer):
         return self.session.get_historical_prices(
-            offer,
-            0,
-            0,
-            'D1'
-        )[0].date
+            offer, 0, 0, 'D1')[0].date
 
-    def _get_next_tick(self, offer):
+    def get_current_tick(self, offer):
         bid = self.session.get_bid(offer)
         ask = self.session.get_ask(offer)
         return bid, ask
       
     def get_bars(self, offer, time_frame, dtfm, dtto):
-        def ole(pydate):
-            delta = pydate - OLE_TIME_ZERO
-            return float(delta.days) + (float(delta.seconds) / 86400)
         fxdata =  self.session.get_historical_prices(
             offer,
-            ole(dtfm),
-            ole(dtto),
+            self._to_ole(dtfm),
+            self._to_ole(dtto),
             time_frame
         )
         npvalues = self._numpy_convert(fxdata)
@@ -119,3 +98,10 @@ class FXCMBrokerHandler(object):
         a = a[a['volume'] >= 0]
         idx = np.unique(a['date'][::-1], return_index = True)[1]
         return a[::-1][idx][::-1]
+
+    def _to_ole(self, pydate):
+        delta = pydate - OLE_TIME_ZERO
+        return float(delta.days) + (float(delta.seconds) / 86400)
+
+    def _from_ole(self, oledate):
+        return OLE_TIME_ZERO + timedelta(days=float(oledate))
