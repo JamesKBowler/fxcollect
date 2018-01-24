@@ -2,10 +2,8 @@ from settings import FX_USER, FX_PASS, URL, FX_ENVR
 from datetime import datetime, timedelta
 
 import forexconnect as fx
-import queue
 import numpy as np
 import time
-import sys
 
 OLE_TIME_ZERO = datetime(1899, 12, 30)
 
@@ -58,8 +56,8 @@ class FXCMBrokerHandler(object):
     def get_offer_status(self, offer):
 
         status = self.session.get_offer_trading_status(offer)
-        utime = self.session.get_offer_time(offer)
-        return status, self._from_ole(utime) 
+        oletime = self.session.get_offer_time(offer)
+        return status, self._from_ole(oletime) 
 
     def get_initial_datetime(self, offer):
         return self.session.get_historical_prices(
@@ -103,5 +101,5 @@ class FXCMBrokerHandler(object):
         delta = pydate - OLE_TIME_ZERO
         return float(delta.days) + (float(delta.seconds) / 86400)
 
-    def _from_ole(self, oledate):
-        return OLE_TIME_ZERO + timedelta(days=float(oledate))
+    def _from_ole(self, oletime):
+        return OLE_TIME_ZERO + timedelta(days=float(oletime))
