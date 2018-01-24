@@ -45,7 +45,7 @@ Specification:
  7. Execute:  
   `$ python3 ~/fxcollect/fx_collect/main.py`  
  
-##### All FXCM data will take about 30 hours to download.  
+##### Each instrument symbol data will take about 1 hour to download.  
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
         | date                | bidopen   | bidhigh   | bidlow    | bidclose  | askopen   | askhigh   | asklow    | askclose  | volume |
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
