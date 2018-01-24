@@ -197,37 +197,41 @@ class InstrumentCollectionHandler(object):
         LOG._debug("GET_", instrument, time_frame,
             market_status, dtfm, dtto)
         # Setup
-        data = 'foobars'
         pdfm = dtfm
-        log = False
-        while len(data) > 1:
+        log = False            
+        while True:
             data = self.br_handler.get_bars(
                 instrument, time_frame,
                 dtfm, dtto
             )
-            if len(data) > 0:                    
+            if len(data) >= 1:                    
                 data = data[data['date'] <= dtto]
-                if len(data) == 0: break
-                # Get first and last date
-                pdfm = data['date'].min().item()
-                pdto = data['date'].max().item()
-                LOG._debug("DATA", instrument, time_frame,
-                    market_status, pdfm, pdto)
-                # Avoiding time overlap
-                dtto = pdfm - timedelta(minutes=1)
-                # Update database
-                self.db_handler.write(
-                    instrument, time_frame, data)
-                # Update instrument attribuites
-                self.tracked.update_database_datetime(
-                    time_frame, pdfm, pdto
-                )
-                # Capture first pdto
-                if not log:
-                    log_max = pdto
-                log = True
-                # Complete
-                if pdfm <= dtfm: break
+                if len(data) > 0:
+                    # Get first and last date
+                    pdfm = data['date'].min().item()
+                    pdto = data['date'].max().item()
+                    LOG._debug("DATA", instrument, time_frame,
+                        market_status, pdfm, pdto)
+                    # Avoiding time overlap
+                    dtto = pdfm - timedelta(minutes=1)
+                    # Update database
+                    self.db_handler.write(
+                        instrument, time_frame, data)
+                    # Update instrument attribuites
+                    self.tracked.update_database_datetime(
+                        time_frame, pdfm, pdto
+                    )
+                    # Capture first pdto
+                    if not log:
+                        log_max = pdto
+                        log = True
+                    # Complete
+                    if pdfm <= dtfm:
+                        break
+                else:
+                    break
+            else:
+                break
         # Logging
         if log:
             if dtfm < pdfm: dtfm = pdfm
