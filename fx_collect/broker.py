@@ -62,6 +62,21 @@ class FXCMBrokerHandler(object):
         return self.session.get_historical_prices(
             offer, 0, 0, 'D1')[0].date
 
+    def get_open_datetime(self, offer):
+        dt = datetime.utcnow().replace(second=0,microsecond=0)
+        dtto = self._to_ole(dt)
+        dtfm = self._to_ole(dt.replace(hour=0,minute=0))
+        while True:
+            data = self.session.get_historical_prices(
+                offer, dtfm, dtto, 'm1')
+            if len(data) > 0:
+                dtto = self._to_ole(data[-1].date)
+                if len(data) == 1:
+                    break
+            else:
+                break
+        return self._from_ole(dtto)
+
     def get_current_tick(self, offer):
         bid = self.session.get_bid(offer)
         ask = self.session.get_ask(offer)
@@ -80,7 +95,7 @@ class FXCMBrokerHandler(object):
     def _numpy_convert(self, values):
         return np.array(
             [v.__getinitargs__() for v in values], dtype=self.dtype)
-
+  
     def _integrity_check(self, a):
         a = a[a['askhigh'] >= a['asklow']]
         a = a[a['askhigh'] >= a['askopen']]
