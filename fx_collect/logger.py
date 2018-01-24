@@ -2,12 +2,12 @@ import logging
 import logging.handlers
 
 class Logger(object):
-    def __init__(self):
+    def __init__(self, instrument):
         f = logging.Formatter(fmt='%(levelname)s:%(name)s: %(message)s '
             '(%(asctime)s; %(filename)s:%(lineno)d)',
-            datefmt="%Y-%m-%d %H:%M:%S")
+            datefmt=None)  #"%Y-%m-%d %H:%M:%S.%f"
         handlers = [
-            logging.handlers.RotatingFileHandler('rotated.log', encoding='utf8',
+            logging.handlers.RotatingFileHandler('logs/%s.log' % instrument, encoding='utf8',
                 maxBytes=100000, backupCount=1),
             logging.StreamHandler()
         ]
