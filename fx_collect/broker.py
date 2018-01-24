@@ -54,7 +54,6 @@ class FXCMBrokerHandler(object):
         return self.session.get_offers()
 
     def get_offer_status(self, offer):
-
         status = self.session.get_offer_trading_status(offer)
         oletime = self.session.get_offer_time(offer)
         return status, self._from_ole(oletime) 
