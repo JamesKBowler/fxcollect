@@ -36,20 +36,21 @@ class InstrumentCollectionHandler(object):
         # Get the latest daliy bar datetime & setup
         # initial system dates.
         self.utc_now = datetime.utcnow()
-        init_dt = self.br_handler._init_datetime(instrument)
-        if init_dt.weekday() == 6: #
+        init_dt = self.br_handler.get_initial_datetime(instrument)
+        if init_dt.weekday() == 6: # Its Sunday
             self.wk_str = init_dt
         else:
             self.wk_str = init_dt - timedelta(days=init_dt.weekday()+1)
-        self.wk_end = self.wk_str + timedelta(days=5, minutes=-1)        
+        self.wk_end = self.wk_str + timedelta(days=5)        
         self.live_collection_range = np.arange(
             self.wk_str, self.wk_end, dtype='datetime64[h]')
+        print(self.live_collection_range)
 
     def _initialise_instrument(
         self, broker, instrument, time_frames
     ):
         # Retrive instrument attribuites from broker
-        status = self.br_handler._get_status(instrument)
+        status = self.br_handler.get_offer_status(instrument)
         market_status, last_update = status
         self.stop_date = self.wk_end + timedelta(minutes=1)
         # Initialise instrument
@@ -253,18 +254,18 @@ class InstrumentCollectionHandler(object):
             # Retrive instrument attribuites from broker
             # and get current utc datetime
             instrument = self.tracked.instrument
-            status = self.br_handler._get_status(instrument)
-            market_status, lastupdate = status
-            if lastupdate > prev_update or prev_status != market_status:
-                bid, ask = self.br_handler._get_next_tick(instrument)
+            status = self.br_handler.get_offer_status(instrument)
+            market_status, last_update = status
+            if last_update > prev_update or prev_status != market_status:
                 if prev_status == 'C':  # Stop false fires
                     # Market has just opened or program has just started
-                    status_datetime = datetime.utcnow()
+                    start_datetime = datetime.utcnow()
+                bid, ask = self.br_handler.get_current_tick(instrument)
                 self.tracked.update_instrument_status(
-                    lastupdate, market_status,
+                    last_update, market_status,
                     self.utc_now, bid, ask
                 )                
-                prev_update = lastupdate
+                prev_update = last_update
                 prev_status = market_status
                 if market_status == 'O': # Open
                     for time_frame in self.tracked.time_frames:
@@ -272,7 +273,7 @@ class InstrumentCollectionHandler(object):
                         self._calculate_finished_bar(time_frame)
                         finbar = self.tracked.attribs[time_frame]['finbar']
                         db_max = self.tracked.attribs[time_frame]['db_max']
-                        if finbar > db_max and finbar > status_datetime:
+                        if finbar > db_max and finbar > start_datetime:
                             # New bar available
                             from_date = db_max + timedelta(minutes=1)
                             to_date = finbar + timedelta(minutes=1)
@@ -285,7 +286,7 @@ class InstrumentCollectionHandler(object):
                                 from_date, to_date, market_status
                             )
                     # Total live collection speed for all time_frames
-                    speed = datetime.utcnow() - lastupdate
+                    speed = datetime.utcnow() - last_update
                 # Convert update to JSON and save to file
                 self._save_update()
             else:
