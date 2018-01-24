@@ -111,7 +111,7 @@ class InstrumentCollectionHandler(object):
             # Catch up from the lastest datebase date.
             from_date = db_max + timedelta(minutes=1)
             to_date = finbar + timedelta(minutes=1)
-            if db_max < finbar:
+            if finbar > db_max:
                 self._data_collection(
                     instrument, time_frame,
                     from_date, to_date, market_status
@@ -210,27 +210,27 @@ class InstrumentCollectionHandler(object):
                     # Get first and last date
                     pdfm = data['date'].min().item()
                     pdto = data['date'].max().item()
-                    LOG._debug("DATA", instrument, time_frame,
-                        market_status, pdfm, pdto)
-                    # Avoiding time overlap
-                    dtto = pdfm - timedelta(minutes=1)
-                    # Update database
-                    self.db_handler.write(
-                        instrument, time_frame, data)
-                    # Update instrument attribuites
-                    self.tracked.update_database_datetime(
-                        time_frame, pdfm, pdto
-                    )
-                    # Capture first pdto
-                    if not log:
-                        log_max = pdto
-                        log = True
-                    # Complete
-                    if pdfm <= dtfm:
-                        break
                 else:
                     break
             else:
+                break
+            LOG._debug("DATA", instrument, time_frame,
+                market_status, pdfm, pdto)
+            # Avoiding time overlap
+            dtto = pdfm - timedelta(minutes=1)
+            # Update database
+            self.db_handler.write(
+                instrument, time_frame, data)
+            # Update instrument attribuites
+            self.tracked.update_database_datetime(
+                time_frame, pdfm, pdto
+            )
+            # Capture first pdto
+            if not log:
+                log_max = pdto
+                log = True
+            # Complete
+            if pdfm <= dtfm:
                 break
         # Logging
         if log:
@@ -263,7 +263,8 @@ class InstrumentCollectionHandler(object):
             if last_update > prev_update or prev_status != market_status:
                 if prev_status == 'C':  # Stop false fires
                     # Market has just opened or program has just started
-                    start_datetime = datetime.utcnow()
+                    # get lowest minutly value for the current day
+                    dt_open = self.br_handler.get_open_datetime(instrument)
                 bid, ask = self.br_handler.get_current_tick(instrument)
                 self.tracked.update_instrument_status(
                     last_update, market_status,
@@ -277,7 +278,7 @@ class InstrumentCollectionHandler(object):
                         self._calculate_finished_bar(time_frame)
                         finbar = self.tracked.attribs[time_frame]['finbar']
                         db_max = self.tracked.attribs[time_frame]['db_max']
-                        if finbar > db_max and finbar > start_datetime:
+                        if finbar > db_max and finbar > dt_open:
                             # New bar available
                             from_date = db_max + timedelta(minutes=1)
                             to_date = finbar + timedelta(minutes=1)
