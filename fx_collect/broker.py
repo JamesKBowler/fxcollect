@@ -78,8 +78,14 @@ class FXCMBrokerHandler(object):
         return self._from_ole(dtto)
 
     def get_current_tick(self, offer):
-        bid = self.session.get_bid(offer)
-        ask = self.session.get_ask(offer)
+        while True:
+            try:
+                bid, ask = self.session.get_bid_ask(offer)
+                if bid > 0 and ask > 0:
+                    break
+            except RuntimeError as e:
+                print(offer, e)
+                pass
         return bid, ask
       
     def get_bars(self, offer, time_frame, dtfm, dtto):
