@@ -44,7 +44,6 @@ class InstrumentCollectionHandler(object):
         self.wk_end = self.wk_str + timedelta(days=5)        
         self.live_collection_range = np.arange(
             self.wk_str, self.wk_end, dtype='datetime64[h]')
-        print(self.live_collection_range)
 
     def _initialise_instrument(
         self, broker, instrument, time_frames
@@ -93,7 +92,8 @@ class InstrumentCollectionHandler(object):
             self.tracked.attribs[time_frame]['db_max'] = db_max
             # No point trying to collect more history from the
             # lowest datebase date if the json file has been created.
-            if not os.path.exists('json_files/%s' % instrument): 
+            if not os.path.exists(JSON_DIR + instrument.replace('/','')):
+                print('hug')
                 # Create first collecton job.
                 self._data_collection(
                     instrument, time_frame,
@@ -118,8 +118,10 @@ class InstrumentCollectionHandler(object):
                 )
             # Logging 'LIVE' ready
             db_max = self.tracked.attribs[time_frame]['db_max']
-            LOG._debug("RDY_", instrument, time_frame,
-                              market_status, db_min, db_max)
+            LOG._debug(
+                "RDY_", instrument, time_frame,
+                market_status, db_min, db_max
+            )
         # Reverse time frames list so that 1 minute is processed first
         self.tracked.time_frames = self.tracked.time_frames[::-1]
         # Save initial JSON to file once historical data is complete
@@ -136,47 +138,42 @@ class InstrumentCollectionHandler(object):
         tf = int(time_frame[1:])
         rng = self.live_collection_range
         # Select time_frame last bar calculation        
-        if time_frame[:1] == "m":
-            # Minutely Bar
+        if time_frame[:1] == "m":  # Minutely Bar
             if lu > self.stop_date:
                 lu = self.stop_date
             offset = lu.time().minute % tf
             unfin_time = lu - timedelta(minutes=offset)
             fin = unfin_time - timedelta(minutes=tf)
                 
-        elif time_frame[:1] == "H":
-            # Daliy Bar
+        elif time_frame[:1] == "H":  # Hourly Bar
             hr_points = rng[0::tf]
-            if lu < hr_points[-2]:
+            if lu < hr_points[-1]:
                 next_bar = min(i for i in hr_points if i > lu)
-                curr_bar = next_bar - tf
-                npfin = curr_bar - tf
-                if npfin < hr_points[0]: 
-                    npfin = hr_points[-1] - 7*24
-                fin = npfin.item()
             else:
-                fin = dy_points[-1].item()
+                next_bar = hr_points[-1] + tf
+            curr_bar = next_bar - tf
+            npfin = curr_bar - tf
+            if npfin < hr_points[0]: 
+                npfin = hr_points[-1] - 7*24
+            fin = npfin.item()
 
-        elif time_frame[:1] == "D":
-            # Daliy Bar
+        elif time_frame[:1] == "D":  # Daliy Bar
             dy_points = rng[0::24*tf]
-            if lu < dy_points[-2]:
+            if lu < dy_points[-1]:
                 next_bar = min(i for i in dy_points if i > lu)
-                curr_bar = next_bar - 24*tf
-                npfin = curr_bar - 24*tf
-                if npfin < dy_points[0]: 
-                    npfin = dy_points[-1] - 7*24
-                fin = npfin.item()
             else:
-                fin = dy_points[-1].item()
+                next_bar = dy_points[-1] + tf*24
+            curr_bar = next_bar - 24*tf
+            npfin = curr_bar - 24*tf
+            if npfin < dy_points[0]: 
+                npfin = dy_points[-1] - 7*24
+            fin = npfin.item()
                 
-        elif time_frame[:1] == "W":
-            # Weekly Bar
+        elif time_frame[:1] == "W":  # Weekly Bar
             curr_bar = rng[0] - 24
             fin = (curr_bar - 7*24).item()
             
-        elif time_frame[:1] == "M":
-            # Monthly Bar
+        elif time_frame[:1] == "M":  # Monthly Bar
             hour = rng[0].item().time().hour
             d = lu.replace(
                 day=1,hour=hour, minute=0, second=0)
@@ -190,12 +187,13 @@ class InstrumentCollectionHandler(object):
         self.tracked.attribs[time_frame]['finbar'] = fin
 
     def _data_collection(
-        self, instrument, time_frame,
-        dtfm, dtto, market_status
+        self, instrument, time_frame, dtfm, dtto, market_status
     ):
         # Logging
-        LOG._debug("GET_", instrument, time_frame,
-            market_status, dtfm, dtto)
+        LOG._debug(
+            "GET_", instrument, time_frame,
+            market_status, dtfm, dtto
+        )
         # Setup
         pdfm = dtfm
         log = False            
@@ -214,17 +212,16 @@ class InstrumentCollectionHandler(object):
                     break
             else:
                 break
-            LOG._debug("DATA", instrument, time_frame,
-                market_status, pdfm, pdto)
+            LOG._debug(
+                "DATA", instrument, time_frame,
+                market_status, pdfm, pdto
+            )
             # Avoiding time overlap
             dtto = pdfm - timedelta(minutes=1)
             # Update database
-            self.db_handler.write(
-                instrument, time_frame, data)
+            self.db_handler.write(instrument, time_frame, data)
             # Update instrument attribuites
-            self.tracked.update_database_datetime(
-                time_frame, pdfm, pdto
-            )
+            self.tracked.update_database_datetime(time_frame, pdfm, pdto)
             # Capture first pdto
             if not log:
                 log_max = pdto
@@ -235,8 +232,10 @@ class InstrumentCollectionHandler(object):
         # Logging
         if log:
             if dtfm < pdfm: dtfm = pdfm
-            LOG._debug("DONE", instrument, time_frame,
-                market_status, pdfm, log_max)
+            LOG._debug(
+                "DONE", instrument, time_frame,
+                market_status, pdfm, log_max
+            )
 
     def _market_condition_open(self):
         self.utc_now = datetime.utcnow()
@@ -265,14 +264,14 @@ class InstrumentCollectionHandler(object):
                     # Market has just opened or program has just started
                     # get lowest minutly value for the current day
                     dt_open = self.br_handler.get_open_datetime(instrument)
-                bid, ask = self.br_handler.get_current_tick(instrument)
-                self.tracked.update_instrument_status(
-                    last_update, market_status,
-                    self.utc_now, bid, ask
-                )                
                 prev_update = last_update
                 prev_status = market_status
+                self.tracked.market_status = market_status
                 if market_status == 'O': # Open
+                    bid, ask = self.br_handler.get_current_tick(instrument)
+                    self.tracked.update_instrument(
+                        last_update, self.utc_now, bid, ask
+                    )
                     for time_frame in self.tracked.time_frames:
                         # Find the last finished bar published by the broker
                         self._calculate_finished_bar(time_frame)
