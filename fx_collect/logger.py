@@ -20,7 +20,7 @@ class Logger(object):
 
     def _debug(self, *msg):
         msgattr = "%s : %s %s" % msg[0:3]
-        a = msg[4].strftime('%Y/%m/%d %H:%M')
-        b = msg[5].strftime('%Y/%m/%d %H:%M') 
+        a = msg[3].strftime('%Y/%m/%d %H:%M')
+        b = msg[4].strftime('%Y/%m/%d %H:%M') 
         log = " ".join([msgattr, a , b])
         self.root_logger.debug(log)
