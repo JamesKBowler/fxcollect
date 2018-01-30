@@ -26,7 +26,7 @@ class MainAggregator(object):
         self.subscriptions = {}
         self.datebases = self.db_handler.get_databases()
         self.time_frames = self.br_handler.supported_time_frames
-        self._subscriptions_manager()
+        self._subprocess_manager()
 
     def _setup_database(self, instruments):
         for instrument in instruments:
