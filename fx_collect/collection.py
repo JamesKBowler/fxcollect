@@ -111,14 +111,16 @@ class DataCollectionHandler(object):
             dtfm = self.time_keeper.sub_dt(db_max)
             dtto = self.time_keeper.add_dt(finbar)
             if finbar > db_max:
-                # Create catchup collection job.
+            # Create catchup collection job.
                 self._data_collection(
                     time_frame,
                     dtfm,
                     dtto
                 )
+            db_min = ins_attribs['db_min']
+            db_max = ins_attribs['db_max']
             LOG._debug(
-                "RDY", instrument, time_frame, dtfm, dtto)
+                "RDY", instrument, time_frame, db_min, db_max)
         # Reverse time frames list so that 1 minute is processed first
         self.time_frames = self.time_frames[::-1]
         # Save initial JSON to file once historical data is complete
@@ -198,7 +200,7 @@ class DataCollectionHandler(object):
                                 "DTA", self.instrument, time_frame,
                                 finbar, db_max)
                     # Total live collection speed for all time_frames
-                    speed = self._utc_now - last_update
+                    speed = (self._utc_now - last_update).total_seconds()
                 # Convert update to JSON and save to file
                 self._save_update()
             else:
