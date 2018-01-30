@@ -67,7 +67,7 @@ class MainAggregator(object):
                     self.br_handler._login()
                 instruments = self.br_handler.get_offers()
                 self._setup_database(instruments)
-                self._check_subscriptions(instruments)
+                self._start_subprocess(instruments)
                 time.sleep(60)
         except KeyboardInterrupt:
             self._kill()
