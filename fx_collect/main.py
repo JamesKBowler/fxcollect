@@ -1,12 +1,3 @@
-from database import DatabaseHandler
-from broker import FXCMBrokerHandler
-
-import subprocess
-import time
-import sys
-import re
-
-
 class MainAggregator(object):
     def __init__(self):
         """
@@ -48,7 +39,7 @@ class MainAggregator(object):
                        'AUD/USD', 'USD/CHF', 'NZD/USD',
                        'USD/CAD', 'USDOLLAR', 'UK100']
         #instruments = ['EUR/USD']
-        instruments = ['GBP/USD','UK100']
+        #instruments = ['GBP/USD','UK100']
         for i in instruments:
             if i not in self.subscriptions:
                 broker = self.broker
@@ -59,15 +50,13 @@ class MainAggregator(object):
                 self.subscriptions[i] = s
                 time.sleep(5) # Watch out for login timeouts
 
-    def _subscriptions_manager(self):
+    def _subprocess_manager(self):
+        instruments = self.br_handler.get_offers()
+        self._setup_database(instruments)
+        self._start_subprocess(instruments)
+        self.br_handler.session.logout()
         try:
-            connected = False
             while True:
-                if not self.br_handler._session_status():
-                    self.br_handler._login()
-                instruments = self.br_handler.get_offers()
-                self._setup_database(instruments)
-                self._start_subprocess(instruments)
                 time.sleep(60)
         except KeyboardInterrupt:
             self._kill()
