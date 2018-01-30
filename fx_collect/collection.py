@@ -111,7 +111,7 @@ class DataCollectionHandler(object):
             dtfm = self.time_keeper.sub_dt(db_max)
             dtto = self.time_keeper.add_dt(finbar)
             if finbar > db_max:
-            # Create catchup collection job.
+                # Create catchup collection job.
                 self._data_collection(
                     time_frame,
                     dtfm,
