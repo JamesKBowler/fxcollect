@@ -1,3 +1,11 @@
+from database import DatabaseHandler
+from broker import FXCMBrokerHandler
+
+import subprocess
+import time
+import sys
+import re
+
 class MainAggregator(object):
     def __init__(self):
         """
