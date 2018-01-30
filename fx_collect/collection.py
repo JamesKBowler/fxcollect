@@ -44,7 +44,7 @@ class DataCollectionHandler(object):
         a finished bar calculation.
         """
         # Initialise instrument
-        self.tracked = InstrumentAttributes(
+        self.ins = InstrumentAttributes(
                 self.broker,
                 self.instrument,
                 self.time_frames,
@@ -60,8 +60,8 @@ class DataCollectionHandler(object):
             else:  # No dates
                 db_min, db_max = self._utc_now, self._ole
             # Store database min and max date time information
-            self.tracked.attribs[time_frame]['db_min'] = db_min
-            self.tracked.attribs[time_frame]['db_max'] = db_max
+            self.ins.attribs[time_frame]['db_min'] = db_min
+            self.ins.attribs[time_frame]['db_max'] = db_max
             # Initial finished bar calculation
             self._calculate_finished_bar(time_frame)
 
@@ -75,7 +75,7 @@ class DataCollectionHandler(object):
             # Instrument is new or not finished
             dtfm = self._ole
             for time_frame in self.time_frames:
-                ins_attribs = self.tracked.attribs[time_frame]
+                ins_attribs = self.ins.attribs[time_frame]
                 if ins_attribs['db_max'] == self._ole:
                     # Its a new collection
                     finbar = ins_attribs['finbar']
@@ -105,7 +105,7 @@ class DataCollectionHandler(object):
         # Instrument history is finished
         for time_frame in self.time_frames:
             self._calculate_finished_bar(time_frame)
-            ins_attribs = self.tracked.attribs[time_frame]
+            ins_attribs = self.ins.attribs[time_frame]
             finbar = ins_attribs['finbar']
             db_max = ins_attribs['db_max']
             dtfm = self.time_keeper.sub_dt(db_max)
@@ -120,7 +120,7 @@ class DataCollectionHandler(object):
             LOG._debug(
                 "RDY", instrument, time_frame, dtfm, dtto)
         # Reverse time frames list so that 1 minute is processed first
-        self.tracked.time_frames = self.tracked.time_frames[::-1]
+        self.time_frames = self.time_frames[::-1]
         # Save initial JSON to file once historical data is complete
         self._save_update()
 
@@ -133,7 +133,7 @@ class DataCollectionHandler(object):
         if self._utc_now <= self.time_keeper.stop_date():
             return True
         else:
-            self.tracked.market_status = 'C'
+            self.ins.market_status = 'C'
             self._save_update()
             print(
                 "Stopping live collection because",
@@ -154,7 +154,7 @@ class DataCollectionHandler(object):
         and finally saving those new attributes to a JSON file.
         """
 
-        ins = self.tracked
+        ins = self.ins
 
         while self._market_condition_open():
             # Retrieve instrument status from broker
@@ -170,7 +170,7 @@ class DataCollectionHandler(object):
                 ins.market_status = market_status
                 if market_status == 'O': # Open
                     bid, ask = self.br_handler.get_current_tick(self.instrument)
-                    self.tracked.update_instrument(
+                    self.ins.update_instrument(
                         last_update, bid, ask
                     )
                     for time_frame in self.time_frames:
@@ -210,12 +210,12 @@ class DataCollectionHandler(object):
         Stops unfinished bars from being written to the
         database by calculating the latest finished bar.
         """
-        last_update = self.tracked.last_update.replace(
+        last_update = self.ins.last_update.replace(
             second=0,microsecond=0
         )
         fin = self.time_keeper.calculate_date(last_update, time_frame)
         # Add Finished bar
-        self.tracked.attribs[time_frame]['finbar'] = fin
+        self.ins.attribs[time_frame]['finbar'] = fin
 
     def _data_collection(
         self, time_frame, dtfm, dtto
@@ -244,7 +244,7 @@ class DataCollectionHandler(object):
                 break
             dtto = self.time_keeper.sub_dt(pdfm)
             self.db_handler.write(self.instrument, time_frame, data)
-            self.tracked.update_datetime(time_frame, pdfm, pdto)
+            self.ins.update_datetime(time_frame, pdfm, pdto)
             # Complete
             if pdfm <= dtfm:
                 break
@@ -254,7 +254,7 @@ class DataCollectionHandler(object):
         Saves an update to a JSON file, which can be later accessed
         from another back-testing or live-trading platform.
         """
-        snapshot = self.tracked.create_snapshot()
+        snapshot = self.ins.create_snapshot()
         with open(self._json_dir, 'w') as f:
             json.dump(snapshot, f)
 
