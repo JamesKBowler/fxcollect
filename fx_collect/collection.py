@@ -207,8 +207,11 @@ class DataCollectionHandler(object):
 
     def _calculate_finished_bar(self, time_frame):
         """
-        Stops unfinished bars from being written to the
-        database by calculating the latest finished bar.
+        Generates a 'SIGNAL' at predefined time intervals in the
+        Timekeeper class. Singles will continue to be sent until
+        the database date time matches the signal. The date time 
+        calculation also stops any unfinished bars from being
+        written to the database.
         """
         last_update = self.ins.last_update.replace(
             second=0,microsecond=0
