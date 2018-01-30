@@ -36,8 +36,13 @@ class FXCMBrokerHandler(object):
         else: return False
 
     def _login(self):
+        """
+        Make session with FXCM, will try 10 times before
+        getting angry :/ 
+        """
         con = False
-        while True:
+        s = 1
+        for i in range(10):
             try:
                 self.session = fx.ForexConnectClient(
                     FX_USER, FX_PASS,
@@ -46,23 +51,38 @@ class FXCMBrokerHandler(object):
                 if self._session_status():
                     con = True
                     break
-            except RuntimeError: time.sleep(1)
+            except RuntimeError:
+                s+=1
+                time.sleep(s)
         if not con:
             raise Exception('Unable to login')
             
     def get_offers(self):
+        """
+        Return a list of offers... well at the moment its a dict
+        but it will be a list once I update the C++ code :P
+        """
         return self.session.get_offers()
 
     def get_offer_status(self, offer):
+        """
+        Returns current markets status ie OPEN or CLOSED and
+        the last update
+        """
         status = self.session.get_offer_trading_status(offer)
         oletime = self.session.get_offer_time(offer)
         return status, self._from_ole(oletime) 
 
     def get_initial_datetime(self, offer):
+        """Gets the current Daily bar date time"""
         return self.session.get_historical_prices(
             offer, 0, 0, 'D1')[0].date
 
     def get_open_datetime(self, offer):
+        """
+        Return the data update of the current day by running
+        over the minutely data until midnight.
+        """
         dt = datetime.utcnow().replace(second=0,microsecond=0)
         dtto = self._to_ole(dt)
         dtfm = self._to_ole(dt.replace(hour=0,minute=0))
@@ -78,17 +98,22 @@ class FXCMBrokerHandler(object):
         return self._from_ole(dtto)
 
     def get_current_tick(self, offer):
+        """Return the current BID and ASK values"""
         while True:
             try:
                 bid, ask = self.session.get_bid_ask(offer)
                 if bid > 0 and ask > 0:
                     break
             except RuntimeError as e:
-                print(offer, e)
+                # Only happens when market Open or Closes
                 pass
         return bid, ask
       
     def get_bars(self, offer, time_frame, dtfm, dtto):
+        """
+        Gets price data from FXCM, converts to a numpy array
+        and performs a basic integrity check
+        """
         fxdata =  self.session.get_historical_prices(
             offer,
             self._to_ole(dtfm),
