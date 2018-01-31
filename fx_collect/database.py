@@ -4,6 +4,7 @@ import MySQLdb
 from settings import DB_HOST, DB_USER, DB_PASS
 import re
 
+
 class DatabaseHandler(object):
     def __init__(self, broker):
         """
@@ -11,6 +12,12 @@ class DatabaseHandler(object):
         with the MariaDB database.
         """
         self.broker = broker
+        self.databases = {}
+        self.update_securities_dict()
+        
+    def update_securities_dict(self):
+        for database in self.get_databases():
+            self.databases[database] = self.get_tables(database)
         
     def _execute_query(self, query):
         try:
@@ -38,7 +45,7 @@ class DatabaseHandler(object):
             cursor.close()
             connection.close()
 
-    def _name_conversion(self, instrument, time_frame=None):
+    def name_conversion(self, instrument, time_frame=None, table=False):
         """
         Converts any instrument names into the database manager.
         Example: 
@@ -46,12 +53,14 @@ class DatabaseHandler(object):
         """
         ins = re.sub('[^A-Za-z0-9]+','',instrument)
         db_name = "%s_bar_%s" % (self.broker, ins)
-        if time_frame is not None:
-            tb_name = 'tbl_%s_%s' % (ins, time_frame)
+        tb_name = 'tbl_%s_%s' % (ins, time_frame)
+        if time_frame is None:
+            return db_name
+        elif table is not False:
+            return tb_name
+        else:
             return db_name, tb_name
-        else: return db_name
-        
-        
+
     def get_databases(self):
         """        
         Returns a list of the current databases.
@@ -63,17 +72,50 @@ class DatabaseHandler(object):
         result = self._execute_query(query)
         if result is not None:
             for (db_name,) in result:
-                dbn = db_name.replace('%s_bar_' % self.broker, '')
-                current_databases.append(dbn)
-        return current_databases[1:]
+                if len(db_name) > 1:
+                    current_databases.append(db_name)
+        return current_databases
 
+    def get_tables(self, db_name):
+        """        
+        Returns a list of the current databases.
+        """
+        current_tables = []
+        query = """
+                SHOW TABLES FROM %s;""" % (
+                db_name)
+        result = self._execute_query(query)
+        if result is not None:
+            for (tb_name,) in result:
+                if len(tb_name) > 1:
+                    current_tables.append(tb_name)
+        return current_tables
+
+    def get_start_datetime(self, instrument, dtnow):
+        db_name, tb_name = self.name_conversion(
+            instrument, 'm1')
+        to_date = dtnow.replace(second=0,microsecond=0)
+        fm_date = to_date.replace(hour=0,minute=0)
+        query = """
+            SELECT `date` 
+            FROM (SELECT `date` 
+                  FROM %s.%s 
+                  WHERE `date` >= '%s' AND `date` <= '%s'
+                  ORDER BY `date` ASC LIMIT 1) a;""" % (
+              db_name, tb_name, fm_date, to_date)
+        result = self._execute_query(query)
+        if result:
+            (dbmin,) = result
+            return dbmin
+        else: return False
+        
     def return_extremity_dates(
         self, instrument, time_frame
     ):
         """
-        Returns the earlest and latest datetime.
+        returns the earlest and latest datetime.
         """
-        db_name, tb_name = self._name_conversion(
+        db_name, tb_name = self.name_conversion(
             instrument, time_frame)
         query = """
             SELECT `date` 
@@ -99,19 +141,13 @@ class DatabaseHandler(object):
         """
         This method will create a new database and associated tables.
         """
-        databases = self.get_databases()
-        db_name = self._name_conversion(instrument)
-        if (
-            re.sub('[^A-Za-z0-9]+','',instrument
-            ) not in databases
-        ):
+        db_name = self.name_conversion(instrument=instrument)
+        if db_name not in self.databases:
             self._execute_query("CREATE DATABASE IF NOT EXISTS %s;" % (db_name))
         for time_frame in time_frames:            
-            db_name, tb_name = self._name_conversion(
-                instrument, time_frame)
-            if not self._execute_query(
-                "SHOW TABLES FROM %s LIKE '%s';" % (db_name, tb_name)
-            ):
+            tb_name = self.name_conversion(
+                instrument, time_frame, True)
+            if tb_name not in self.databases[db_name]:
                 self._execute_query("CREATE TABLE IF NOT EXISTS %s.%s ( \
                              `date` DATETIME NOT NULL, \
                              `bidopen` DECIMAL(19,6) NULL, \
@@ -125,6 +161,8 @@ class DatabaseHandler(object):
                              `volume` BIGINT NULL, \
                             PRIMARY KEY (`date`)) \
                             ENGINE=InnoDB;" % (db_name, tb_name))
+
+        self.update_securities_dict()
 
     def write(self, instrument, time_frame, data):
         """
@@ -143,7 +181,7 @@ class DatabaseHandler(object):
         | 2017-04-27 10:09:00 | 17.302000 | 17.303000 | 17.294000 | 17.294000 | 17.346000 | 17.346000 | 17.338000 | 17.338000 |     50 |
         | 2017-04-27 10:10:00 | 17.294000 | 17.296000 | 17.281000 | 17.291000 | 17.338000 | 17.338000 | 17.328000 | 17.333000 |     50 |
         """
-        db_name, tb_name = self._name_conversion(
+        db_name, tb_name = self.name_conversion(
             instrument, time_frame)        
         insert = "REPLACE INTO %s.%s " % (db_name, tb_name)
         stmt = """(date, bidopen, bidhigh, bidlow, bidclose,
@@ -151,3 +189,4 @@ class DatabaseHandler(object):
                   ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
         sql = insert + stmt
         self._execute_many(sql, data.tolist())
+        
