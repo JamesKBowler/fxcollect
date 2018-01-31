@@ -113,7 +113,7 @@ class DatabaseHandler(object):
         self, instrument, time_frame
     ):
         """
-        returns the earlest and latest datetime.
+        returns the earliest and latest datetime.
         """
         db_name, tb_name = self.name_conversion(
             instrument, time_frame)
