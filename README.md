@@ -45,7 +45,7 @@ Specification:
  7. Execute:  
   `$ python3 ~/fxcollect/fx_collect/main.py`  
  
-##### Each instrument symbol data will take about 1 hour to download.  
+##### Each instrument symbol data will take about 1 hour to download, then data will be collected at every time frame interval   
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
         | date                | bidopen   | bidhigh   | bidlow    | bidclose  | askopen   | askhigh   | asklow    | askclose  | volume |
         +---------------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+--------+
