@@ -6,6 +6,7 @@ import time
 import sys
 import re
 
+
 class MainAggregator(object):
     def __init__(self):
         """
@@ -24,18 +25,16 @@ class MainAggregator(object):
         self.db_handler = DatabaseHandler(self.broker)
         self.br_handler = FXCMBrokerHandler()
         self.subscriptions = {}
-        self.datebases = self.db_handler.get_databases()
         self.time_frames = self.br_handler.supported_time_frames
         self._subprocess_manager()
 
     def _setup_database(self, instruments):
         for instrument in instruments:
-            if instrument.replace('/','') not in self.datebases:
-                # Setup each instrument
-                self.db_handler.create(
-                      instrument, self.time_frames
-                )
-            self.datebases = self.db_handler.get_databases()
+            # Setup each instrument
+            self.db_handler.create(
+                  instrument, self.time_frames
+            )
+        self.datebases = self.db_handler.databases
 
     def _start_subprocess(self, instruments):
         # There are lots of offers to track at FXCM.
