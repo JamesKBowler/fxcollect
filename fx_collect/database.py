@@ -19,25 +19,28 @@ class DatabaseHandler(object):
         for database in self.get_databases():
             self.databases[database] = self.get_tables(database)
         
-    def _execute_query(self, query):
-        try:
-            connection = MySQLdb.connect(
+    def _db_connection(self):
+        return MySQLdb.connect(
                 host=DB_HOST, user=DB_USER, passwd=DB_PASS
             )
+
+    def _execute_query(self, query):
+        try:
+            connection = self._db_connection()
             cursor = connection.cursor()
             cursor.execute(query)
             results = cursor.fetchall()
-            if results: return results
-            else: return None
+            if results:
+                return results
+            else:
+                return None
         finally:
             cursor.close()
             connection.close()
             
     def _execute_many(self, stmt, data):
         try:
-            connection = MySQLdb.connect(
-                host=DB_HOST, user=DB_USER, passwd=DB_PASS
-            )
+            connection = self._db_connection()
             cursor = connection.cursor()
             cursor.executemany(stmt, data)
             connection.commit()
@@ -107,7 +110,8 @@ class DatabaseHandler(object):
         if result:
             (dbmin,) = result
             return dbmin
-        else: return False
+        else:
+            return False
         
     def return_extremity_dates(
         self, instrument, time_frame
@@ -135,7 +139,8 @@ class DatabaseHandler(object):
             (dbmin,) = result[0]
             (dbmax,) = result[1]
             return dbmin, dbmax
-        else: return False
+        else:
+            return False
 
     def create(self, instrument, time_frames):
         """
