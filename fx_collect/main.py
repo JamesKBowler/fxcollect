@@ -36,26 +36,50 @@ class MainAggregator(object):
             )
         self.datebases = self.db_handler.databases
 
-    def _start_subprocess(self, instruments):
-        # There are lots of offers to track at FXCM.
-        # Its best to only track what you intend to trade.
-        # Lots of connections will cause login timeouts and 
-        # high RAM usage : ( 
-        # Some defaults below have been set.
-        instruments = ['EUR/USD', 'USD/JPY', 'GBP/USD',
-                       'AUD/USD', 'USD/CHF', 'NZD/USD',
-                       'USD/CAD', 'USDOLLAR', 'UK100']
-        #instruments = ['EUR/USD']
-        #instruments = ['GBP/USD','UK100']
-        for i in instruments:
-            if i not in self.subscriptions:
+    def _start_subprocess(self, offers):
+        selections = {}
+        instruments = list(offers.keys())
+        instruments.sort()
+        for index, item in enumerate(instruments):
+            selections[index] = item
+            print(index, item)
+        message = """
+
+        .---..-..-.
+        | |-  >  < 
+        `-'  '-'`-`
+                   
+        .---..----..-.   .-.   .---..---..---.
+        | |  | || || |__ | |__ | |- | |  `| |'
+        `---'`----'`----'`----'`---'`---' `-' 
+
+
+        There are lots of offers to track at FXCM.
+        Its best to only track what you intend to trade.
+        Lots of connections will cause login timeouts and 
+        high RAM usage : (
+
+        Select 10 instruments you want to track
+
+
+        Enter the index number separating by comma ,
+        1,3,30,20,44,2
+
+        """
+        print(message)
+        user_selection = input("Input >>> : : ").split(',')
+        results = list(map(int, user_selection))
+        print(": : : : : : : : : : : : : : : : : : : : :")
+        print(": : : : : : : : : : : : : : : : : : : : :")
+        for index in results:
+            instrument = selections[index]
+            if instrument not in self.subscriptions:
                 broker = self.broker
-                instrument = i
                 s = subprocess.Popen(
                     ['python3', 'collection.py', broker, instrument]
                 )
-                self.subscriptions[i] = s
-                time.sleep(5) # Watch out for login timeouts
+                self.subscriptions[instrument] = s
+                time.sleep(20) # Watch out for login timeouts
 
     def _subprocess_manager(self):
         instruments = self.br_handler.get_offers()
