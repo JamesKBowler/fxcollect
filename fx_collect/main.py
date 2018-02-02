@@ -1,6 +1,6 @@
 from database import DatabaseHandler
 from broker import FXCMBrokerHandler
-
+import numpy as np
 import subprocess
 import time
 import sys
@@ -42,7 +42,22 @@ class MainAggregator(object):
         instruments.sort()
         for index, item in enumerate(instruments):
             selections[index] = item
-            print(index, item)
+        pp = []
+        pppp = []
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        for k ,v in selections.items():
+            s = "%s : %s " % (k,v)
+            pp.append(s)
+            if len(pp) >= 4:
+                pppp.append(pp)
+                pp = []
+            elif k+1 == len(selections):
+                pppp.append(pp)                
+        for i in pppp:
+            print(" ".join(i))
         message = """
 
         .---..-..-.
@@ -59,18 +74,26 @@ class MainAggregator(object):
         Lots of connections will cause login timeouts and 
         high RAM usage : (
 
-        Select 10 instruments you want to track
+        Select the offers you want to track
 
 
         Enter the index number separating by comma ,
+        
         1,3,30,20,44,2
 
         """
         print(message)
-        user_selection = input("Input >>> : : ").split(',')
-        results = list(map(int, user_selection))
-        print(": : : : : : : : : : : : : : : : : : : : :")
-        print(": : : : : : : : : : : : : : : : : : : : :")
+        try:
+            user_selection = input("Input >>> : : ").split(',')
+            results = list(map(int, user_selection))
+        except ValueError:
+            sys.exit(
+                "No selection made"
+            )
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
+        print(": : : : : : : : : : : : : : : : : : : : : : : : : :\n")
         for index in results:
             instrument = selections[index]
             if instrument not in self.subscriptions:
