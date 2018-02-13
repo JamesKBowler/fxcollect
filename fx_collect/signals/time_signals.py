@@ -12,9 +12,8 @@ class TimeSignals(object):
         self.cur_time = datetime.utcnow()
         self.start_date = start_date
         self.end_date = end_date
-        self.sig = self._merge_all_signals()
+        self.signals = self._merge_all_signals()
         self.init_signals = self.get_init_signals()
-        self.signals = self.sig
 
     def _merge_all_signals(self):
         base = np.arange(
@@ -51,7 +50,7 @@ class TimeSignals(object):
     def get_init_signals(self):
         init_signals = {}
         for tf in self._time_frames:
-            s = self.sig[self.sig[:,3] == tf][0]
+            s = self.signals[self.signals[:,3] == tf][0]
             init_signals[tf] = {
                 'fin':s[0], 'cur':s[1], 'nxt':s[2]
             }
