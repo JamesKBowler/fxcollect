@@ -6,16 +6,18 @@ or live execution.
 
 ### Setup
 Specification: 
- - Ubuntu Server 16.04
- - Python 3.x
+ - Ubuntu Server 16.04  
+ - Python 3.x  
  - 2x CPUs  
- - 2GB RAM  
- - 100GB SSD/HDD (for testing hard drive is fine)
- 59 instruments = 41GB as of 29/04/2017
+ - 4GB RAM, but 2GB will work if tracking a few offers.  
+ - 100GB SSD/HDD (for testing hard drive is fine)  
+ 59 instruments = 41GB as of 29/04/2017  
  
  1. Install dependencies
   - numpy  
   - pymysql  
+  - cprint  
+  - pytz  
  
  2. Install MariaDB 10.x  
    https://mariadb.org/download/
