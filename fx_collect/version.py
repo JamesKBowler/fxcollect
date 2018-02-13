@@ -1,0 +1,8 @@
+__author__ = "James Bowler"
+__copyright__ = "Copyright 2017"
+__license__ = "MIT"
+__version__ = "3.0.0"
+__maintainer__ = "jkbowler"
+__email__ = ""
+__status__ = "Development"
+__url__ = "https://github.com/jkbowler/fx_collect"
