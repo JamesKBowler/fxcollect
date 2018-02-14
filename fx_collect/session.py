@@ -84,7 +84,7 @@ class CollectionSession(object):
         print("Running Session...")
         while self._continue_loop_condition():
             try:
-                
+                self.time_handler.generate_signals()
                 try:
                     event = self.events_queue.get(False)
                 except queue.Empty:
@@ -102,9 +102,6 @@ class CollectionSession(object):
                             raise NotImplemented(
                                 "Unsupported event.type {}".format(event.type)
                             )
-
-                self.time_handler.generate_signals()
-
             except KeyboardInterrupt:
                 self._shutdown()
 
