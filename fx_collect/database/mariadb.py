@@ -11,13 +11,6 @@ class Database(AbstractDatabase):
         self._h = host
         self._u = user
         self._p = passwd
-        self.securities = self.update_securities_dict()
-
-    def update_securities_dict(self):
-        securities = {}
-        for database in self.get_databases():
-            securities[database] = self.get_tables(database)
-        return securities
 
     def get_databases(self):
         """        
@@ -50,13 +43,13 @@ class Database(AbstractDatabase):
         This method will create a new database and associated tables.
         """
         db_name = self.name_conversion(instrument=instrument)
-        if db_name not in self.securities:
+        if db_name not in self.datebases():
             self._execute_query(
                 "CREATE DATABASE IF NOT EXISTS %s;" % (db_name))
         for time_frame in time_frames:            
             tb_name = self.name_conversion(
                 instrument, time_frame, True)
-            if tb_name not in self.securities[db_name]:
+            if tb_name not in self.get_tables(db_name):
                 self._execute_query(
                     "CREATE TABLE IF NOT EXISTS {0}.{1} ( \
                         `date` DATETIME NOT NULL, \
@@ -71,7 +64,6 @@ class Database(AbstractDatabase):
                         `volume` BIGINT NULL, \
                     PRIMARY KEY (`date`)) \
                     ENGINE=InnoDB;".format(db_name, tb_name))
-        self.update_securities_dict()
 
     def extremity_dates(
         self, instrument, time_frame
