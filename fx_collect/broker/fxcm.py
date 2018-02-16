@@ -1,6 +1,7 @@
+from forexconnect import set_log_level
+set_log_level(9) # turn off logging
 from forexconnect import ForexConnectHistoryClient, ForexConnectOffersClient
 from .base import AbstractBroker
-
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -27,10 +28,11 @@ class FXCMBrokerHistory(AbstractBroker):
                 ('bidclose', '<f8'), ('volume', '<i8')
             ]
         )
-        self._login_()
+        self._session = self._login_()
         
     def _login_(self):
-        self._session = ForexConnectHistoryClient(
+        return self._login(
+                ForexConnectHistoryClient,
                 self._u, self._p, self._e, self._url
         )
 
@@ -80,6 +82,8 @@ class FXCMBrokerHistory(AbstractBroker):
         return bars[0].date
 
     def _get_bars(self, offer, time_frame, dtfm, dtto):
+        if not self._session.is_connected():
+            self._session = self._login_()
         return self._session.get_historical_prices(
             offer.encode(),
             self._to_ole(dtfm),
@@ -122,22 +126,18 @@ class FXCMBrokerHistory(AbstractBroker):
         f = self._to_ole
         if dtfm < dtto:
             while (f(dtto) - f(dtfm)) > 0.0001:
-                if self._session_status():
-                    data = self._bars(
-                       offer, time_frame, dtfm, dtto
-                    )             
-                    if len(data) > 0:
-                        nxt_dt = data['date'].min().item()
-                        if abs(f(dtto) - f(nxt_dt)) > 0.0001:
-                            dtto = nxt_dt
-                        else:
-                            break
-                        yield data.tolist()
+                data = self._bars(
+                   offer, time_frame, dtfm, dtto
+                )             
+                if len(data) > 0:
+                    nxt_dt = data['date'].min().item()
+                    if abs(f(dtto) - f(nxt_dt)) > 0.0001:
+                        dtto = nxt_dt
                     else:
                         break
+                    yield data.tolist()
                 else:
-                    self._login_()   
-
+                    break                              
 
 class FXCMBrokerOffers(AbstractBroker):
     """
@@ -156,11 +156,12 @@ class FXCMBrokerOffers(AbstractBroker):
             'D1', 'W1', 'M1'
               
         ]
-        self._login_()
-
+        self._session = self._login_()
+        
     def _login_(self):
-        self._session = ForexConnectOffersClient(
-            self._u, self._p, self._e, self._url
+        return self._login(
+                ForexConnectOffersClient,
+                self._u, self._p, self._e, self._url
         )
 
     def get_offers(self):
@@ -217,4 +218,3 @@ class FXCMBrokerOffers(AbstractBroker):
                 # Only happens when market Open or Closes
                 pass
         return bid, ask
-
