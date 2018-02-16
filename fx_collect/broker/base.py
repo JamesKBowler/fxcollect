@@ -13,25 +13,18 @@ class AbstractBroker(object):
     
     __metaclass__ = ABCMeta
 
-    def _session_status(self):
-        if self._session.is_connected():
-            return True
-        else:
-            return False
-
     def _login(self, broker, user, passwd, env, url):
         rest = 0
         while True:
             rest+=1
             try:
-                self._session = broker(
+                session = broker(
                     user.encode(), passwd.encode(),
                     env.encode(), url.encode()
                 )
-                if self._session_status():
-                    break
+                if session.is_connected():
+                    return session
             except RuntimeError as e:
-                print(e)
                 time.sleep(rest)
 
     def _logout(self):
