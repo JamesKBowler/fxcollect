@@ -48,10 +48,10 @@ class FXCMBrokerHistory(AbstractBroker):
         jobs = []
         rng = np.arange(midnight, utc_now, dtype='datetime64[m]')
         points = rng[0::200]
-        for i in np.arange(len(points)):
-            fm = points[i].item()
+        for ii in np.arange(len(points)):
+            fm = points[ii].item()
             try:
-                to = (points[i+1] - 1).item()
+                to = (points[ii+1] - 1).item()
             except IndexError:
                 to = utc_now
             jobs.append((fm,to))
@@ -126,18 +126,22 @@ class FXCMBrokerHistory(AbstractBroker):
         f = self._to_ole
         if dtfm < dtto:
             while (f(dtto) - f(dtfm)) > 0.0001:
-                data = self._bars(
-                   offer, time_frame, dtfm, dtto
-                )             
-                if len(data) > 0:
-                    nxt_dt = data['date'].min().item()
-                    if abs(f(dtto) - f(nxt_dt)) > 0.0001:
-                        dtto = nxt_dt
+                try:
+                    data = self._bars(
+                       offer, time_frame, dtfm, dtto
+                    )             
+                    if len(data) > 0:
+                        nxt_dt = data['date'].min().item()
+                        if abs(f(dtto) - f(nxt_dt)) > 0.0001:
+                            dtto = nxt_dt
+                        else:
+                            break
+                        yield data.tolist()
                     else:
                         break
-                    yield data.tolist()
-                else:
-                    break                              
+                except RuntimeError:
+                    # Catch: Session timeouts etc from the C++
+                    pass
 
 class FXCMBrokerOffers(AbstractBroker):
     """
@@ -155,7 +159,7 @@ class FXCMBrokerOffers(AbstractBroker):
             'H1', 'H2', 'H4', 'H8',
             'D1', 'W1', 'M1'
               
-        ]
+        ] # TimeSignals delta must match order.
         self._session = self._login_()
         
     def _login_(self):
@@ -168,18 +172,12 @@ class FXCMBrokerOffers(AbstractBroker):
         return self._session.get_offers()
 
     def get_market_status(self, offer):
-        while True:
-            status = self._session.get_offer_trading_status(offer)
-            if status is not 'U':
-                break
+        status = self._session.get_offer_trading_status(offer)
         return status
         
     def get_offer_timestamp(self, offer):
-        while True:
-            timestamp = self._session.get_offer_time(offer)
-            if timestamp is not 0.0:
-                break
-        return timestamp
+        timestamp = self._session.get_offer_time(offer)
+        return self._fm_ole(timestamp)
 
     def get_point_size(self, offer):
         return self._session.get_offer_point_size(offer)
@@ -203,18 +201,14 @@ class FXCMBrokerOffers(AbstractBroker):
         for o in offers:
             offers_dict[o] = {
                 'status': self.get_market_status(o),
-                'timestamp': self._fm_ole(self.get_offer_timestamp(o))
+                'timestamp': self.get_offer_timestamp(o)
             }
         return offers_dict 
 
     def get_current_bid_ask(self, offer):
         """Return the current BID and ASK values"""
-        while True:
-            try:
-                bid, ask = self._session.get_bid_ask(offer)
-                if bid > 0 and ask > 0:
-                    break
-            except RuntimeError as e:
-                # Only happens when market Open or Closes
-                pass
-        return bid, ask
+        bid, ask = self._session.get_bid_ask(offer)
+        if bid > 0 and ask > 0:
+            return bid, ask
+        return None, None
+
