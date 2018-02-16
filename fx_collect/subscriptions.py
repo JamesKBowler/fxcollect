@@ -1,6 +1,8 @@
 from .event import EventType, DataEvent
 from .offer import Offer
 from .settings import JSON_DIR
+from termcolor import cprint
+
 import os
 import json
 
@@ -17,7 +19,6 @@ class Subscriptions(object):
         self.closed = []
         self.signals = init_signals
         self.jobs = []
-        self.save_to_json = True
         for offer in init_offers:
             self.subscribe(offer)
 
@@ -25,12 +26,12 @@ class Subscriptions(object):
         if offer not in self.subscriptions:
             passport = self.ob.get_passport(offer)
             status = self.ob.get_status([offer])[offer]
-            broker = self.ob.broker
+            broker_name = self.ob.broker
             timestamp, market_status = status
             timeframes, pointsize, contract = passport
             market_open = self.pb.get_open_datetime(offer)
             offer_attribs = Offer(
-                broker, offer,
+                broker_name, offer,
                 timeframes, market_open, 
                 pointsize,
                 self.pb._fm_ole(0.0),
@@ -38,26 +39,23 @@ class Subscriptions(object):
             )
             self.db.create(offer, timeframes)
             self.subscriptions[offer] = offer_attribs
-
             for timeframe in timeframes:
                 fin_bar = self.signals[timeframe]
                 dtx = self.db.extremity_dates(offer, timeframe)
                 dtfm = self.pb._fm_ole(0.0)
                 if dtx:  # Dates found
                     dtto = dtx[0] # Lowest Date
-                    x = 0
                 else:  # No dates
-                    x = 1
                     dtto = fin_bar['fin']
-                jobno = -2
                 self.append_event(
-                    jobno, offer, timeframe, dtfm, dtto)
+                    -2, offer, timeframe, dtfm, dtto)
                 self.subscriptions[offer].update_datetime(
                     timeframe, dtfm, dtto
                 )
+            cprint("{}: Subscribed".format(offer), 'magenta')
 
         else:
-            print("%s already in Portfolio" % offer)
+            print("{} already in Subscriptions".format(offer))
 
     def record_signal(
         self, finished_bar, current_bar, next_bar, timeframe
@@ -134,19 +132,20 @@ class Subscriptions(object):
                     # Market has just opened
                     sub.market_open = self.pb.get_open_datetime(o)
                 bid, ask = self.ob.get_current_bid_ask(o)
-                sub.update_offer(
-                    new['timestamp'], new['status'], bid, ask
-                )
-                self.save_update(o)
+                if bid not None and ask not None:
+                    sub.update_offer(
+                        new['timestamp'], new['status'], bid, ask
+                    )
+                    self.save_update(o)
                 
-    def save_update(self, offer):
+    def save_update(self, offer, save_to_json=True):
         """
         Saves an update to a JSON file, which can be later accessed
         from another back-testing or live-trading platform.
         """
         json_dir = os.path.join(
-            JSON_DIR, "{0}".format(offer.replace('/','')))
-        if self.save_to_json:
+            JSON_DIR, "{0}.json".format(offer.replace('/','')))
+        if save_to_json:
             snapshot = self.subscriptions[offer].create_snapshot()
             with open(json_dir, 'w') as f:
                 json.dump(snapshot, f)
