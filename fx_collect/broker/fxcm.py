@@ -119,26 +119,24 @@ class FXCMBrokerHistory(AbstractBroker):
             dtfm = datetime.strptime(dtfm, '%Y-%m-%d %H:%M')
         if isinstance(dtto, str):
             dtto = datetime.strptime(dtto, '%Y-%m-%d %H:%M')
-        pdfm = dtfm
-        while True:
-            if self._session_status():
-                data = self._bars(
-                   offer, time_frame, dtfm, dtto
-                )
-                if len(data) == 1:
-                    pdto = data['date'].max().item()
-                    if pdto == pdfm:
+        f = self._to_ole
+        if dtfm < dtto:
+            while (f(dtto) - f(dtfm)) > 0.0001:
+                if self._session_status():
+                    data = self._bars(
+                       offer, time_frame, dtfm, dtto
+                    )             
+                    if len(data) > 0:
+                        nxt_dt = data['date'].min().item()
+                        if abs(f(dtto) - f(nxt_dt)) > 0.0001:
+                            dtto = nxt_dt
+                        else:
+                            break
+                        yield data.tolist()
+                    else:
                         break
-                if len(data) > 0:
-                    # Get first
-                    pdfm = data['date'].min().item()
                 else:
-                    break
-                # Switch to lowest date
-                dtto = pdfm
-                yield data.tolist()
-            else:
-                self._login_()
+                    self._login_()   
 
 
 class FXCMBrokerOffers(AbstractBroker):
