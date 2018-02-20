@@ -39,7 +39,7 @@ Specification:
     `$ sudo service mysql restart`  
  
  4. Download forexconnect and follow instructions.  
-     https://github.com/JamesKBowler/python-forexconnect  
+     https://github.com/JamesKBowler/python-forexconnect/tree/python3-forexconnect   
  
  5. Download this repository  
   `$ git clone https://github.com/JamesKBowler/fxcollect ~/`  
