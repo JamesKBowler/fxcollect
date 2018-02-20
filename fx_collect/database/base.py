@@ -16,9 +16,9 @@ class AbstractDatabase(object):
             )
 
     def _execute_query(self, query):
+        connection = self._db_connection()
+        cursor = connection.cursor()
         try:
-            connection = self._db_connection()
-            cursor = connection.cursor()
             cursor.execute(query)
             results = cursor.fetchall()
             if results:
@@ -30,9 +30,9 @@ class AbstractDatabase(object):
             connection.close()
 
     def _execute_many(self, stmt, data):
+        connection = self._db_connection()
+        cursor = connection.cursor()
         try:
-            connection = self._db_connection()
-            cursor = connection.cursor()
             cursor.executemany(stmt, data)
             connection.commit()
         finally:

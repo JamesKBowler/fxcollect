@@ -4,50 +4,25 @@ import numpy as np
 import pytz
 
 class TimeSignals(object):
-    def __init__(self, events_queue, time_frames, start_date, end_date):
-        print("Week Start: {0} End: {1}".format(start_date, end_date))
+    """
+    The TimeSignals class will generate an Array of signals for
+    each time frame and place into the events queue.
+    """
+    def __init__(self, events_queue, start_date, end_date):
         self.events_queue = events_queue
-        self._time_frames = time_frames
-        self._deltas = [1,5,15,30,60,120,240,480,1440,0,0]
+        self._time_frames = {
+            'm1': 1, 'm5': 5, 'm15': 15, 'm30': 30,
+            'H1': 60, 'H2': 120, 'H4': 240, 'H8': 480,
+            'D1': 1440, 'W1': None , 'M1': None
+        }
         self.cur_time = datetime.utcnow()
         self.start_date = start_date
         self.end_date = end_date
         self.signals = self._merge_all_signals()
         self.init_signals = self.get_init_signals()
 
-    def _merge_all_signals(self):
-        base = np.arange(
-            self.start_date, self.end_date, dtype='datetime64[m]'
-        )
-        arr_list = []
-        for d, tf in zip(self._deltas, self._time_frames):
-            if tf == 'M1':
-                merged = self._find_monthly_signal()
-            elif tf == 'W1':    
-                merged = self._find_weekly_signal()
-            else:
-                merged = self._find_else_signal(base, d, tf)
-            arr_list.append(merged)
-            
-        _a =  np.array(
-            sorted(np.concatenate(arr_list), key=lambda x: x[0])
-        )
-        # Fix start and end signals
-        fs, fe = [], []        
-        for s in _a[_a[:,0] == self.start_date]:
-            fs.append([s[0],s[1]-timedelta(days=2),s[2],s[3]])
-        for e in _a[_a[:,2] == self.end_date]:
-            fe.append([e[0],e[1],e[2]+timedelta(days=2),e[3]])
-        # Remove the wrong start and end signals
-        a = _a[_a[:,0] != self.start_date]
-        arr1 = a[a[:,2] != self.end_date]
-        arr2 = np.array(fs)
-        arr3 = np.array(fe)
-        # Merge and sort all signals by date
-        return np.array(sorted(np.concatenate(
-            [arr1, arr2, arr3]), key=lambda x: x[0]))
-
     def get_init_signals(self):
+        """ Extract the first signal for each time frame """
         init_signals = {}
         for tf in self._time_frames:
             s = self.signals[self.signals[:,3] == tf][0]
@@ -59,7 +34,8 @@ class TimeSignals(object):
     def _ny(self, dt):
         """
         Adjusts the time based on the US/Eastern timezone,
-        for New York opening.
+        for New York opening. (Only used on Monthly and Weekly
+        signal creation).
         """
         offset = 0
         newyork = pytz.timezone('US/Eastern')
@@ -72,6 +48,7 @@ class TimeSignals(object):
         return dt - timedelta(hours=offset)
 
     def _find_monthly_signal(self):
+        """ Monthly signal """
         def end_of_next_month(dt):
             month = dt.month + 2
             year = dt.year
@@ -114,6 +91,7 @@ class TimeSignals(object):
         return np.column_stack(arr)
         
     def _find_weekly_signal(self):
+        """ Weekly signal """
         curr = self.start_date - timedelta(days=1)
         W_curr = np.array([curr])
         W_fin = np.array([curr - timedelta(days=7)])
@@ -122,8 +100,9 @@ class TimeSignals(object):
         chars[:] = 'W1'
         arr = np.array([W_curr, W_fin, W_sig, chars])
         return np.column_stack(arr) 
-    
+
     def _find_else_signal(self, base, d, tf):
+        """ Minutely and daily signals """
         sig = base[0::d]
         fin = base[0::d] - d
         nxt = base[0::d] + d
@@ -136,18 +115,59 @@ class TimeSignals(object):
         arr = np.array([s,f,n,c])
         return np.column_stack(arr)
 
-    def _place_signal_into_queue(self, s):
-        signal_event = SignalEvent(
-            finished_bar=s[1],
-            current_bar=s[0],
-            next_bar=s[2],
-            timeframe=s[3]
+    def _merge_all_signals(self):
+        """ 
+        Encapsulate all signal creation methods and concatenate
+        in a date sorted Numpy Array.
+        """
+        base = np.arange(
+            self.start_date, self.end_date, dtype='datetime64[m]'
         )
-        self.events_queue.put(signal_event)
+        arr_list = []
+        for tf, d in self._time_frames.items():
+            if tf == 'M1':
+                merged = self._find_monthly_signal()
+            elif tf == 'W1':    
+                merged = self._find_weekly_signal()
+            else:
+                merged = self._find_else_signal(base, d, tf)
+            arr_list.append(merged)
+        _a =  np.array(
+            sorted(np.concatenate(arr_list), key=lambda x: x[0])
+        )
+        # Fix start and end signals
+        fs, fe = [], []        
+        for s in _a[_a[:,0] == self.start_date]:
+            fs.append([s[0],s[1]-timedelta(days=2),s[2],s[3]])
+        for e in _a[_a[:,2] == self.end_date]:
+            fe.append([e[0],e[1],e[2]+timedelta(days=2),e[3]])
+        # Remove the wrong start and end signals
+        a = _a[_a[:,0] != self.start_date]
+        arr1 = a[a[:,2] != self.end_date]
+        arr2 = np.array(fs)
+        arr3 = np.array(fe)
+        # Merge and sort all signals by date
+        return np.array(sorted(np.concatenate(
+            [arr1, arr2, arr3]), key=lambda x: x[0]))
+
+    def _place_signals_into_queue(self, signals_found):
+        """ All signals will be place into the queue """
+        for s in signals_found:
+            signal_event = SignalEvent(
+                finished_bar=s[1],
+                current_bar=s[0],
+                next_bar=s[2],
+                timeframe=s[3]
+            )
+            self.events_queue.put(signal_event)
         
     def generate_signals(self):
+        """ 
+        Compare the current time with the signal, any signal
+        that is less than the current time will be placed into the
+        queue.
+        """
         self.cur_time = datetime.utcnow()
         signals_found = self.signals[self.signals[:,0] <= self.cur_time]
         self.signals = self.signals[self.signals[:,0] > self.cur_time]
-        for signal in signals_found:
-            self._place_signal_into_queue(signal)
+        self._place_signals_into_queue(signals_found)

@@ -25,12 +25,22 @@ class Offer(object):
                 'db_max' : None,
                 'finbar' : None,
                 'busy' : True,
-                'hasjob': False,
-                'jobno': -2
+                'jobno': -2,
+                'penalty' : 0
             }
 
     def update_job_number(self, timeframe, jobno):
         self.attribs[timeframe]['jobno'] = jobno + 1
+
+    def penalty(self, timeframe, clear=False):
+        if not clear:
+            self.attribs[timeframe]['penalty'] += 1
+            if self.attribs[timeframe]['penalty'] > 5:
+                return True
+            else:
+                return False
+        else:
+            self.attribs[timeframe]['penalty'] = 0
 
     def mark_as_busy(self, timeframe, busy):
         self.attribs[timeframe]['busy'] = busy
