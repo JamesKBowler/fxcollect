@@ -1,3 +1,26 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 James K Bowler, Data Centauri Ltd
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
 class Offer(object):
     def __init__(
         self, broker, offer, timeframes, market_open,
@@ -29,27 +52,6 @@ class Offer(object):
                 'penalty' : 0
             }
 
-    def update_job_number(self, timeframe, jobno):
-        self.attribs[timeframe]['jobno'] = jobno + 1
-
-    def penalty(self, timeframe, clear=False):
-        if not clear:
-            self.attribs[timeframe]['penalty'] += 1
-            if self.attribs[timeframe]['penalty'] > 5:
-                return True
-            else:
-                return False
-        else:
-            self.attribs[timeframe]['penalty'] = 0
-
-    def mark_as_busy(self, timeframe, busy):
-        self.attribs[timeframe]['busy'] = busy
-
-    def return_job(self, timeframe):
-        dtfm = self.attribs[timeframe]['db_max']
-        jobno = self.attribs[timeframe]['jobno']
-        return jobno, dtfm
-
     def signal_valid(self, signal, current_bar, timeframe):
         att = self.attribs[timeframe]
         if self.status == 'O':
@@ -59,19 +61,13 @@ class Offer(object):
                         return True
         return False
 
-    def update_offer(
+    def update_broker_values(
         self, timestamp, market_status, bid, ask
     ):
         self.status = market_status
         self.timestamp = timestamp
         self.bid = bid
         self.ask = ask
-
-    def update_datetime(
-        self, timeframe, db_min, db_max
-    ):
-        self.attribs[timeframe]['db_min'] = db_min
-        self.attribs[timeframe]['db_max'] = db_max
 
     def create_snapshot(self):
         attribs = {}
