@@ -1,7 +1,35 @@
-from ..event import SignalEvent
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 James K Bowler, Data Centauri Ltd
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from datetime import datetime, timedelta
+from ..event import SignalEvent
+from ..utils.date_utils import (
+    end_of_last_month,
+    end_of_month,
+    end_of_next_month,
+    new_york_offset
+)
 import numpy as np
-import pytz
+
 
 class TimeSignals(object):
     """
@@ -20,100 +48,6 @@ class TimeSignals(object):
         self.end_date = end_date
         self.signals = self._merge_all_signals()
         self.init_signals = self.get_init_signals()
-
-    def get_init_signals(self):
-        """ Extract the first signal for each time frame """
-        init_signals = {}
-        for tf in self._time_frames:
-            s = self.signals[self.signals[:,3] == tf][0]
-            init_signals[tf] = {
-                'fin':s[0], 'cur':s[1], 'nxt':s[2]
-            }
-        return init_signals
-
-    def _ny(self, dt):
-        """
-        Adjusts the time based on the US/Eastern timezone,
-        for New York opening. (Only used on Monthly and Weekly
-        signal creation).
-        """
-        offset = 0
-        newyork = pytz.timezone('US/Eastern')
-        nydt = newyork.localize(dt, is_dst=None)
-        assert nydt.tzinfo is not None
-        assert nydt.tzinfo.utcoffset(nydt) is not None
-        isdst = bool(nydt.dst())
-        if isdst:
-            offset = 1
-        return dt - timedelta(hours=offset)
-
-    def _find_monthly_signal(self):
-        """ Monthly signal """
-        def end_of_next_month(dt):
-            month = dt.month + 2
-            year = dt.year
-            if month > 12:
-                next_month = month - 12
-                year+=1
-            else:
-                next_month = month
-            return (
-                dt.replace(
-                    year=year, month=next_month, day=1
-                ) - timedelta(days=1)
-            )
-
-        def end_of_month(dt):
-            month = dt.month + 1
-            year = dt.year
-            if month == 12:
-                month = 1
-                year+=1
-            return (
-                dt.replace(
-                    year=year, month=month, day=1
-                ) - timedelta(days=1)
-            )
-        def end_of_last_month(dt):
-            return dt.replace(day=1) - timedelta(days=1)
-
-        init_month = end_of_month(self.start_date)
-        if self.cur_time >= init_month:
-            curr = init_month
-        else:
-            curr = end_of_last_month(init_month)
-        M_curr = np.array([curr])
-        M_sig = np.array([self._ny(end_of_next_month(curr))])
-        M_fin = np.array([end_of_last_month(curr)])
-        chars = np.empty(M_sig.size, dtype='<U3')
-        chars[:] = 'M1'
-        arr = np.array([M_curr, M_fin, M_sig, chars])
-        return np.column_stack(arr)
-        
-    def _find_weekly_signal(self):
-        """ Weekly signal """
-        curr = self.start_date - timedelta(days=1)
-        W_curr = np.array([curr])
-        W_fin = np.array([curr - timedelta(days=7)])
-        W_sig = np.array([self._ny(curr + timedelta(days=8))])
-        chars = np.empty(W_sig.size, dtype='<U3')
-        chars[:] = 'W1'
-        arr = np.array([W_curr, W_fin, W_sig, chars])
-        return np.column_stack(arr) 
-
-    def _find_else_signal(self, base, d, tf):
-        """ Minutely and daily signals """
-        sig = base[0::d]
-        fin = base[0::d] - d
-        nxt = base[0::d] + d
-        chars = np.empty(sig.size, dtype='<U3')
-        chars[:] = tf
-        s = np.row_stack(sig)
-        f = np.row_stack(fin)
-        n = np.row_stack(nxt)
-        c = np.row_stack(chars)
-        arr = np.array([s,f,n,c])
-        return np.column_stack(arr)
 
     def _merge_all_signals(self):
         """ 
@@ -150,8 +84,58 @@ class TimeSignals(object):
         return np.array(sorted(np.concatenate(
             [arr1, arr2, arr3]), key=lambda x: x[0]))
 
+    def get_init_signals(self):
+        """ Extract the first signal for each time frame """
+        init_signals = {}
+        for tf in self._time_frames:
+            s = self.signals[self.signals[:,3] == tf][0]
+            init_signals[tf] = {
+                'fin':s[0], 'cur':s[1], 'nxt':s[2]
+            }
+        return init_signals
+
+    def _find_monthly_signal(self):
+        """ Monthly signal """
+        init_month = end_of_month(self.start_date)
+        if self.cur_time >= init_month:
+            curr = init_month
+        else:
+            curr = end_of_last_month(init_month)
+        M_curr = np.array([curr])
+        M_sig = np.array([new_york_offset(end_of_next_month(curr))])
+        M_fin = np.array([end_of_last_month(curr)])
+        chars = np.empty(M_sig.size, dtype='<U3')
+        chars[:] = 'M1'
+        arr = np.array([M_curr, M_fin, M_sig, chars])
+        return np.column_stack(arr)
+        
+    def _find_weekly_signal(self):
+        """ Weekly signal """
+        curr = self.start_date - timedelta(days=1)
+        W_curr = np.array([curr])
+        W_fin = np.array([curr - timedelta(days=7)])
+        W_sig = np.array([new_york_offset(curr + timedelta(days=8))])
+        chars = np.empty(W_sig.size, dtype='<U3')
+        chars[:] = 'W1'
+        arr = np.array([W_curr, W_fin, W_sig, chars])
+        return np.column_stack(arr) 
+
+    def _find_else_signal(self, base, d, tf):
+        """ Minutely and daily signals """
+        sig = base[0::d]
+        fin = base[0::d] - d
+        nxt = base[0::d] + d
+        chars = np.empty(sig.size, dtype='<U3')
+        chars[:] = tf
+        s = np.row_stack(sig)
+        f = np.row_stack(fin)
+        n = np.row_stack(nxt)
+        c = np.row_stack(chars)
+        arr = np.array([s,f,n,c])
+        return np.column_stack(arr)
+
     def _place_signals_into_queue(self, signals_found):
-        """ All signals will be place into the queue """
+        """ Signals will be place into the queue """
         for s in signals_found:
             signal_event = SignalEvent(
                 finished_bar=s[1],
