@@ -52,17 +52,17 @@ class TimeSignals(object):
         def end_of_next_month(dt):
             month = dt.month + 2
             year = dt.year
-            if month >= 11:
-                if month == 11:
-                    month = 1
-                if month == 12:
-                    month = 2
+            if month > 12:
+                next_month = month - 12
                 year+=1
+            else:
+                next_month = month
             return (
                 dt.replace(
-                    year=year, month=month, day=1
+                    year=year, month=next_month, day=1
                 ) - timedelta(days=1)
             )
+
         def end_of_month(dt):
             month = dt.month + 1
             year = dt.year
