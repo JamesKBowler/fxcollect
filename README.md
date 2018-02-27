@@ -1,7 +1,3 @@
-**Update**  
-Uploading a pre-built OVA file to my google drive, come back soon....  
-
-
 # fxcollect
 
 The purpose of 'fxcollect' is to automate the collection of historical and live financial  
