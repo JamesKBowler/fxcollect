@@ -11,20 +11,20 @@ tested on a debian-based x86_64 distribution, but will likely work on many other
  1. Modify `settings.py` to at least add your FXCM login credentials.
  2. Modify `main.py` to adjust which symbols will be collected. 
  3. Browse into the top directory of the repository and build the docker container:
-
-
-    $ cd fxcollect 
-    $ docker build .
-
+ 
+``` 
+$ cd fxcollect 
+$ docker build .
+```
 Or you can use the additional `WITH_PHPMYADMIN` argument to build container with phpmyadmin, to be able to easily
 inspect the data right from the container:
 
     $ docker build --build-arg WITH_PHPMYADMIN=1 .
     
  4. Run the container, optionally forward ports to browse using phpmyadmin.
-
-
-    $ docker run -p 127.0.0.1:8080:80/tcp -it <built-image-id>
+```
+$ docker run -p 127.0.0.1:8080:80/tcp -it <built-image-id>
+```
     
 
 ### Manual Setup
