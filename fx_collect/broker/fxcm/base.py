@@ -6,6 +6,8 @@ from forexconnect import (
     ForexConnectTradingClient,
     set_log_level
 )
+from traceback import print_exc
+from ...settings import FXCM_CREDENTIALS, FXCM_CREDENTIALS_FILE
 
 set_log_level(9)
 
@@ -21,9 +23,6 @@ class AbstractFXCMBroker(AbstractBroker):
 
     def url(self):
         return 'http://www.fxcorporate.com/Hosts.jsp'
-
-    def env(self):
-        return 'real'
 
     def whoami(self):
         return 'fxcm'
@@ -49,20 +48,29 @@ class AbstractFXCMBroker(AbstractBroker):
     def _create_session(self, session_type):    
         import time
         rest = 0
-        dir = '/home/nonroot/.fxcmcredentials'
-        with open(dir) as f:
-            credentials = f.readlines()
-        user, passwd = credentials[0].strip().split(':') 
+        if FXCM_CREDENTIALS:
+            credentials = FXCM_CREDENTIALS
+        else:
+            if FXCM_CREDENTIALS_FILE:
+                dir = FXCM_CREDENTIALS_FILE
+                with open(dir) as f:
+                    credentials = f.readlines()
+                    credentials = credentials[0]
+            else:
+                raise (Exception("No FXCM credentials found. Modify settings.py before running the application."))
+                
+        fxcm_env, user, passwd = credentials.strip().split(':') 
         while True:
-            rest+=1
+            if rest<60: rest+=1
             try:
                 session = session_type(
                     user.encode(), passwd.encode(),
-                    self.env().encode(), self.url().encode()
+                    fxcm_env.encode(), self.url().encode()
                 )
                 if session.is_connected():
                     return session
             except RuntimeError as e:
+                print_exc()
                 time.sleep(rest)
 
     def _logout_session(self):
