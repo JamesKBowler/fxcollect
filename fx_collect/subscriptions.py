@@ -24,11 +24,12 @@
 from fx_collect.utils.date_utils import fm_ole
 from .event import EventType, DataEvent, ResponseEvent
 from .offer import Offer
-from .settings import JSON_DIR
+from .settings import JSON_DIR, COLLECT_TIMEFRAMES_ONLY
 from termcolor import cprint
 import os
 import json
 import time
+from traceback import print_exc
 
 class Subscriptions(object):
     """
@@ -79,6 +80,12 @@ class Subscriptions(object):
             market_open = self.pb.get_open_datetime(offer)
             timestamp, market_status = status
             timeframes, pointsize, contract = passport
+            if COLLECT_TIMEFRAMES_ONLY:
+                timeframes_ = []
+                for tf in timeframes:
+                    if tf in COLLECT_TIMEFRAMES_ONLY:
+                        timeframes_.append(tf)
+                timeframes=timeframes_
             # Create Offer object
             offer_attribs = Offer(
                 broker_name, offer,
