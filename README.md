@@ -4,7 +4,30 @@ The purpose of 'fxcollect' is to automate the collection of historical and live 
 time series data from FXCM, then store these data in a MariaDB database ready for backtesting  
 or live execution.  
 
-### Setup
+### Quick Setup (using docker)
+You can use the provided dockerfile to quickly and painlessly setup the application. It has been 
+tested on a debian-based x86_64 distribution, but will likely work on many others. 
+
+ 1. Modify `settings.py` to at least add your FXCM login credentials.
+ 2. Modify `main.py` to adjust which symbols will be collected. 
+ 3. Browse into the top directory of the repository and build the docker container:
+ 
+``` 
+$ cd fxcollect 
+$ docker build .
+```
+Or you can use the additional `WITH_PHPMYADMIN` argument to build container with phpmyadmin, to be able to easily
+inspect the data right from the container:
+
+    $ docker build --build-arg WITH_PHPMYADMIN=1 .
+    
+ 4. Run the container, optionally forward ports to browse using phpmyadmin.
+```
+$ docker run -p 127.0.0.1:8080:80/tcp -it <built-image-id>
+```
+    
+
+### Manual Setup
 Specification: 
  - Ubuntu Server 16.04  
  - Python 3.x  
@@ -17,7 +40,8 @@ Specification:
   - numpy  
   - pymysql  
   - cprint  
-  - pytz  
+  - pytz 
+  - termcolor 
  
  2. Install MariaDB 10.x  
    https://mariadb.org/download/
@@ -27,7 +51,7 @@ Specification:
     `$ mysql -u root -p`  
   
     `mysql> CREATE USER 'sec_master'@'localhost' IDENTIFIED BY 'password';`  
-    `mysql> GRANT ALL PRIVILEGES ON '*.*' TO 'sec_master'@'localhost';`  
+    `mysql> GRANT ALL PRIVILEGES ON *.* TO 'sec_master'@'localhost';`  
     `mysql> FLUSH PRIVILEGES;`  
     `mysql> set global max_connections = 1000;`  
  

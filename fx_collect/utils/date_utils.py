@@ -89,7 +89,7 @@ def end_of_month(dt):
     """
     month = dt.month + 1
     year = dt.year
-    if month == 12:
+    if month > 12:
         month = 1
         year+=1
     return (
