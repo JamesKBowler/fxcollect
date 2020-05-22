@@ -1,5 +1,3 @@
-## New data collection project located at https://github.com/JamesKBowler/opencollect
-
 # fxcollect
 
 The purpose of 'fxcollect' is to automate the collection of historical and live financial  
